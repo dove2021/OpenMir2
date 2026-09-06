@@ -44,11 +44,11 @@ namespace GameSrv.Services
             }
             catch (TimeoutException)
             {
-                LogService.Error($"链接数据库服务器[{SystemShare.Config.sDBAddr}:{SystemShare.Config.nDBPort}]超时...");
+                LogService.Error($"链接数据库服务器1{SystemShare.Config.sDBAddr}:{SystemShare.Config.nDBPort}]超时...");
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                LogService.Error($"链接数据库服务器[{SystemShare.Config.sDBAddr}:{SystemShare.Config.nDBPort}]失败...");
+                LogService.Error($"链接数据库服务器2[{SystemShare.Config.sDBAddr}:{SystemShare.Config.nDBPort}]失败...{exception.Message}");
             }
         }
 

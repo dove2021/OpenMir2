@@ -1,4 +1,4 @@
-﻿using OpenMir2;
+using OpenMir2;
 using OpenMir2.Data;
 using OpenMir2.Packets.ClientPackets;
 
@@ -1918,7 +1918,7 @@ namespace SystemModule.Conf.Model
             boHeroAttackTarget = true;
             DecUserGameGold = 10000;
             CloseSpeedHackCheck = true;
-            ConnctionString = "server=127.0.0.1;uid=root;pwd=;database=mir2;";
+            ConnctionString = "server=127.0.0.1;uid=root;pwd=123456;database=mir2_data;";
             sDBType = "MySQL";
             NpcNameColor = 255;
             ItemSpeed = 60;

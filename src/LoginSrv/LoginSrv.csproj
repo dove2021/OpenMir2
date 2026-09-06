@@ -60,6 +60,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Include="UserLimit.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="ServerAddr.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <ProjectReference Include="..\OpenMir2\OpenMir2.csproj" />
 	</ItemGroup>
 

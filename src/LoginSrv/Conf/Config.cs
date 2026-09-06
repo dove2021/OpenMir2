@@ -1,4 +1,4 @@
-﻿namespace LoginSrv.Conf
+﻿﻿namespace LoginSrv.Conf
 {
     public class Config
     {
@@ -45,17 +45,22 @@
             nFeePort = 16301;
             sLogServer = "127.0.0.1";
             nLogPort = 16301;
-            sGateAddr = "*";
+                // 默认改为本地地址，避免在运行时对 '*' 调用 IPAddress.Parse 抛出异常
+                // 如果需要监听所有地址，可在运行目录的 logsrv.conf 中将 GateAddr 设置为 0.0.0.0
+                sGateAddr = "127.0.0.1";
             nGatePort = 5500;
-            sServerAddr = "*";
+            // 使用本地回环地址作为默认，避免对 '*' 调用 IPAddress.Parse 时抛出异常
+            // 可在运行目录的 logsrv.conf 中设置为 0.0.0.0 来监听所有地址
+            sServerAddr = "127.0.0.1";
             nServerPort = 5600;
-            sMonAddr = "*";
+            // 监控地址也默认改为本地回环地址
+            sMonAddr = "127.0.0.1";
             nMonPort = 3000;
             TestServer = true;
             EnableMakingID = true;
             DynamicIPMode = false;
             GateRoute = new GateRoute[60];
-            ConnctionString = "server=127.0.0.1;uid=root;pwd=;database=mir2_account;";
+            ConnctionString = "server=127.0.0.1;uid=root;pwd=123456;database=mir2_account;";
             ShowDebug = false;
             ShowLogLevel = 1;
         }

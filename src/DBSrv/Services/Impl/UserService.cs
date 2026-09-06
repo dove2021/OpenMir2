@@ -38,8 +38,9 @@ namespace DBSrv.Services.Impl
         public void Initialize()
         {
             TouchSocketConfig touchSocketConfig = new TouchSocketConfig();
+            IPAddress ipAddress = _setting.GateAddr == "*" ? IPAddress.Any : IPAddress.Parse(_setting.GateAddr);
             touchSocketConfig.SetListenIPHosts([
-                new IPHost(IPAddress.Parse(_setting.GateAddr), _setting.GatePort)
+                new IPHost(ipAddress, _setting.GatePort)
             ]).SetTcpDataHandlingAdapter(() => new ServerPacketFixedHeaderDataHandlingAdapter());
             _socketServer.Setup(touchSocketConfig);
         }

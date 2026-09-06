@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^dotnet run --project src\\\\GameSrv\\\\GameSrv\\.csproj -c Release$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

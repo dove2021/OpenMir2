@@ -1,0 +1,1 @@
+mysql -u root -p123456 mir2_db < d:\sources\github3\OpenMir2\sql\mir2_db.sql

@@ -1,4 +1,4 @@
-﻿using DBSrv.Conf;
+using DBSrv.Conf;
 using DBSrv.Storage;
 using OpenMir2.DataHandlingAdapters;
 
@@ -31,9 +31,10 @@ namespace DBSrv.Services.Impl
         public void Initialize()
         {
             TouchSocketConfig touchSocketConfig = new TouchSocketConfig();
+            IPAddress ipAddress = _setting.ServerAddr == "*" ? IPAddress.Any : IPAddress.Parse(_setting.ServerAddr);
             touchSocketConfig.SetListenIPHosts(new IPHost[1]
             {
-                new IPHost(IPAddress.Parse(_setting.ServerAddr), _setting.ServerPort)
+                new IPHost(ipAddress, _setting.ServerPort)
             }).SetTcpDataHandlingAdapter(() => new PlayerDataFixedHeaderDataHandlingAdapter());
             _serverSocket.Setup(touchSocketConfig);
         }
