@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<UserSecretsId>1fd3fe7d-5ab8-4c52-b44f-47638c9af29a</UserSecretsId>
@@ -91,6 +91,13 @@
 	  <None Update="appsettings.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="Config\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>

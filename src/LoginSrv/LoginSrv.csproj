@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
@@ -60,6 +60,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Include="Config\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+		</None>
 		<None Include="UserLimit.txt">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
