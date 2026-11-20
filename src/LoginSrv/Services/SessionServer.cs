@@ -358,7 +358,7 @@ namespace LoginSrv.Services
             bool result = true;
             for (int i = 0; i < UserLimit.Length; i++)
             {
-                if (UserLimit[i].ServerName == serverName)
+                if (UserLimit[i] != null && UserLimit[i].ServerName == serverName)
                 {
                     if (UserLimit[i].LimitCountMin > UserLimit[i].LimitCountMax)
                     {
@@ -478,16 +478,17 @@ namespace LoginSrv.Services
             {
                 string tempName = GetLimitName(sServerName);
                 string sSendMsg = string.Format(sFormatMsg, wIdent, sMsg);
+                
                 for (int i = 0; i < _serverList.Count; i++)
                 {
                     ServerSessionInfo msgServer = _serverList[i];
-                    if (msgServer.Socket.Connected)
+                    bool connected = msgServer.Socket.Connected;
+                    bool nameMatch = string.IsNullOrEmpty(tempName) || string.IsNullOrEmpty(msgServer.ServerName) || string.Compare(msgServer.ServerName, tempName, StringComparison.OrdinalIgnoreCase) == 0 || msgServer.ServerIndex == 99;
+                    
+                    if (connected && nameMatch)
                     {
-                        if ((string.IsNullOrEmpty(tempName)) || (string.IsNullOrEmpty(msgServer.ServerName)) || (string.Compare(msgServer.ServerName, tempName, StringComparison.OrdinalIgnoreCase) == 0)
-                            || (msgServer.ServerIndex == 99))
-                        {
-                            msgServer.Socket.Send(HUtil32.GetBytes(sSendMsg));
-                        }
+                        msgServer.Socket.Send(HUtil32.GetBytes(sSendMsg));
+                        
                     }
                 }
             }
@@ -571,14 +572,21 @@ namespace LoginSrv.Services
         private string GetLimitName(string sServerName)
         {
             string result = string.Empty;
+            
             for (int i = 0; i < UserLimit.Length; i++)
             {
-                if (string.Compare(UserLimit[i].ServerName, sServerName, StringComparison.OrdinalIgnoreCase) == 0)
+                if (UserLimit[i] != null && !string.IsNullOrEmpty(UserLimit[i].ServerName))
                 {
-                    result = UserLimit[i].Name;
-                    break;
+                    bool match = string.Compare(UserLimit[i].ServerName, sServerName, StringComparison.OrdinalIgnoreCase) == 0;
+                    
+                    if (match)
+                    {
+                        result = UserLimit[i].Name;
+                        break;
+                    }
                 }
             }
+            
             return result;
         }
 
@@ -593,12 +601,15 @@ namespace LoginSrv.Services
             {
                 StringList LoadList = new StringList();
                 LoadList.LoadFromFile(sFileName);
+                
                 for (int i = 0; i < LoadList.Count; i++)
                 {
                     string lineText = LoadList[i];
+                    
                     lineText = HUtil32.GetValidStr3(lineText, ref sServerName, dividerAry);
                     lineText = HUtil32.GetValidStr3(lineText, ref s10, dividerAry);
                     lineText = HUtil32.GetValidStr3(lineText, ref s14, dividerAry);
+                    
                     if (!string.IsNullOrEmpty(sServerName))
                     {
                         UserLimit[nC] = new LimitServerUserInfo();
@@ -642,7 +653,7 @@ namespace LoginSrv.Services
                 }
                 for (int i = 0; i < UserLimit.Length; i++)
                 {
-                    if (UserLimit[i].ServerName == sServerName)
+                    if (UserLimit[i] != null && UserLimit[i].ServerName == sServerName)
                     {
                         if (UserLimit[i].LimitCountMin <= UserLimit[i].LimitCountMax / 2)
                         {

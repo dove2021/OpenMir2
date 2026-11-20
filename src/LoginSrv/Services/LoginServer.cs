@@ -208,7 +208,7 @@ namespace LoginSrv.Services
             userInfo.SessionID = 0;
             userInfo.Socket = gateInfo.Socket;
             userInfo.ClientTick = HUtil32.GetTickCount();
-            userInfo.LastCreateAccountTick = HUtil32.GetTickCount();
+            userInfo.LastCreateAccountTick = 0;
             userInfo.LastUpdateAccountTick = HUtil32.GetTickCount();
             userInfo.LastUpdatePwdTick = HUtil32.GetTickCount();
             userInfo.LastGetBackPwdTick = HUtil32.GetTickCount();

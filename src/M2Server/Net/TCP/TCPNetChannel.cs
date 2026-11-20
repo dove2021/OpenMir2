@@ -1,4 +1,4 @@
-﻿using OpenMir2;
+using OpenMir2;
 using OpenMir2.Common;
 using OpenMir2.DataHandlingAdapters;
 using OpenMir2.Packets.ClientPackets;
@@ -340,6 +340,20 @@ namespace M2Server.Net.TCP
         /// </summary>
         public void SetGateUserList(int gateIdx, int nSocket, IPlayerActor playObject)
         {
+            string gateInfo = "OUT_OF_RANGE";
+            if (_gameGates != null && gateIdx >= 0 && gateIdx < _gameGates.Length)
+            {
+                gateInfo = _gameGates[gateIdx] == null ? "NULL" : "OK";
+            }
+            
+            if (_gameGates == null || gateIdx < 0 || gateIdx >= _gameGates.Length || _gameGates[gateIdx] == null)
+            {
+                return;
+            }
+            if (_gameGates[gateIdx].GateInfo.UserList == null)
+            {
+                _gameGates[gateIdx].GateInfo.UserList = new List<SessionUser>();
+            }
             _gameGates[gateIdx].SetGateUserList(nSocket, playObject);
         }
 

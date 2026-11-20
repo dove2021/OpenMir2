@@ -2,7 +2,7 @@
 {
     public class ChatCommandFilter
     {
-        public const string CHATCMDFILTERFILE = "CharCmdFilter.txt";
+        public const string CHATCMDFILTERFILE = "ChatFilter.txt";
         private string ChatCommandFile;
         private static readonly ChatCommandFilter instance = new ChatCommandFilter();
 
@@ -18,7 +18,7 @@
 
         public void LoadChatCommandFilterList()
         {
-            ChatCommandFile = Path.Combine(AppContext.BaseDirectory, "ChatFilter.txt");
+            ChatCommandFile = Path.Combine(AppContext.BaseDirectory, CHATCMDFILTERFILE);
             LoadChatCmdFilterList();
         }
 

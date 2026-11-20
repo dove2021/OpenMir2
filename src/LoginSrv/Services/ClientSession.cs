@@ -1,4 +1,4 @@
-﻿using LoginSrv.Conf;
+using LoginSrv.Conf;
 using LoginSrv.Storage;
 using System.Net.Sockets;
 
@@ -71,11 +71,13 @@ namespace LoginSrv.Services
                         {
                             continue;
                         }
+                        bool userFound = false;
                         for (int i = 0; i < clientSession.UserList.Count; i++)
                         {
                             UserInfo userInfo = clientSession.UserList[i];
                             if (userInfo.SockIndex == message.SoketId)
                             {
+                                userFound = true;
                                 ProcessUserMsg(clientSession, userInfo, sMsg);
                                 break;
                             }
@@ -354,16 +356,7 @@ namespace LoginSrv.Services
                     LogService.Warn("[新建账号失败] 数据包为空或数据包长度异常");
                     return;
                 }
-                byte accountStrSize = (byte)Math.Ceiling((decimal)(UserEntry.Size * 4) / 3);
-                if (sData.Length <= accountStrSize)
-                {
-                    return;
-                }
-                byte[] ueBuff = EDCode.DecodeBuffer(sData[..accountStrSize]);
-                byte[] uaBuff = EDCode.DecodeBuffer(sData[accountStrSize..]);
-                byte[] accountBuff = new byte[ueBuff.Length + uaBuff.Length];
-                Buffer.BlockCopy(ueBuff, 0, accountBuff, 0, ueBuff.Length);
-                Buffer.BlockCopy(uaBuff, 0, accountBuff, ueBuff.Length, uaBuff.Length);
+                byte[] accountBuff = EDCode.DecodeBuffer(sData);
                 UserAccountPacket userAccount = ClientPacket.ToPacket<UserAccountPacket>(accountBuff);
                 if (userAccount == null || userAccount.UserEntry == null || userAccount.UserEntryAdd == null)
                 {
@@ -541,16 +534,7 @@ namespace LoginSrv.Services
                     LogService.Warn("[更新账号失败] 数据包为空或数据包长度异常");
                     return;
                 }
-                byte accountStrSize = (byte)Math.Ceiling((decimal)(UserEntry.Size * 4) / 3);
-                if (sData.Length <= accountStrSize)
-                {
-                    return;
-                }
-                byte[] ueBuff = EDCode.DecodeBuffer(sData[..accountStrSize]);
-                byte[] uaBuff = EDCode.DecodeBuffer(sData[accountStrSize..]);
-                byte[] accountBuff = new byte[ueBuff.Length + uaBuff.Length];
-                Buffer.BlockCopy(ueBuff, 0, accountBuff, 0, ueBuff.Length);
-                Buffer.BlockCopy(uaBuff, 0, accountBuff, ueBuff.Length, uaBuff.Length);
+                byte[] accountBuff = EDCode.DecodeBuffer(sData);
                 UserAccountPacket userAccount = ClientPacket.ToPacket<UserAccountPacket>(accountBuff);
                 int nCode = -1;
                 if (string.Compare(userInfo.Account, userAccount.UserEntry.Account, StringComparison.OrdinalIgnoreCase) == 0 && LsShare.VerifyAccountRule(userAccount.UserEntry.Account))

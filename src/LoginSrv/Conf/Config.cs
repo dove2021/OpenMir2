@@ -1,4 +1,4 @@
-﻿﻿namespace LoginSrv.Conf
+﻿﻿﻿﻿namespace LoginSrv.Conf
 {
     public class Config
     {

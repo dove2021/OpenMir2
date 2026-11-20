@@ -96,15 +96,18 @@ namespace GameSrv.Word.Threads
         {
             bool boReTryLoadDb = false;
             IList<LoadDBInfo> loadRcdTempList = M2Share.FrontEngine.GetLoadTempList();
+            
             for (int i = 0; i < loadRcdTempList.Count; i++)
             {
                 LoadDBInfo loadDbInfo = loadRcdTempList[i];
+                
                 if (loadDbInfo.SessionID == 0)
                 {
                     continue;
                 }
                 if (!LoadCharacterData(loadDbInfo, ref boReTryLoadDb))
                 {
+                    
                     M2Share.NetChannel.CloseUser(loadDbInfo.GateIdx, loadDbInfo.SocketId);
                     LogService.Debug("读取用户数据失败，踢出用户.");
                 }
@@ -133,23 +136,21 @@ namespace GameSrv.Word.Threads
             int queryId = 0;
             bool result = false;
             reTry = false;
+            
             if (M2Share.FrontEngine.InSaveRcdList(loadUser.ChrName))
             {
-                reTry = true;// 反回TRUE,则重新加入队列
-                return false;
+                
+                reTry = true;
+                return true;
             }
-            /*if (SystemShare.WorldEngine.GetPlayObjectEx(loadUser.ChrName) != null)
-            {
-                SystemShare.WorldEngine.KickPlayObjectEx(loadUser.ChrName);
-                boReTry = true;// 反回TRUE,则重新加入队列
-                return false;
-            }*/
             if (!PlayerDataService.QueryCharacterData(loadUser.Account, loadUser.ChrName, loadUser.sIPaddr, ref queryId, loadUser.SessionID))
             {
+                
                 M2Share.NetChannel.SendOutConnectMsg(loadUser.GateIdx, loadUser.SocketId, loadUser.GSocketIdx); // 获取数据失败,发送连接断开消息
             }
             else
             {
+                
                 UserOpenInfo userOpenInfo = new UserOpenInfo
                 {
                     ChrName = loadUser.ChrName,

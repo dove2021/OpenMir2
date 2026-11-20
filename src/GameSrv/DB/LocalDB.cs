@@ -684,28 +684,53 @@ namespace GameSrv.DB
                         sData = HUtil32.GetValidStr3(sData, ref appr, TextSplitConst);
                         if (!string.IsNullOrEmpty(chrName) && !string.IsNullOrEmpty(mapName) && !string.IsNullOrEmpty(appr))
                         {
-                            NormNpc npc = null;
-                            switch (HUtil32.StrToInt(type, 0))
+                            int nType = HUtil32.StrToInt(type, 0);
+                            switch (nType)
                             {
                                 case 0:
-                                    npc = new Merchant();
+                                    {
+                                        Merchant merchant = new Merchant
+                                        {
+                                            MapName = mapName,
+                                            CurrX = HUtil32.StrToInt16(cX, 0),
+                                            CurrY = HUtil32.StrToInt16(cY, 0),
+                                            ChrName = chrName,
+                                            NpcFlag = HUtil32.StrToInt16(flag, 0),
+                                            Appr = (ushort)HUtil32.StrToInt(appr, 0),
+                                            FilePath = ScriptFlagConst.sMarket_Def,
+                                            ScriptName = chrName,
+                                        };
+                                        SystemShare.WorldEngine.AddMerchant(merchant);
+                                    }
                                     break;
                                 case 1:
-                                    npc = new GuildOfficial();
+                                    {
+                                        GuildOfficial guildNpc = new GuildOfficial
+                                        {
+                                            MapName = mapName,
+                                            CurrX = HUtil32.StrToInt16(cX, 0),
+                                            CurrY = HUtil32.StrToInt16(cY, 0),
+                                            ChrName = chrName,
+                                            NpcFlag = HUtil32.StrToInt16(flag, 0),
+                                            Appr = (ushort)HUtil32.StrToInt(appr, 0),
+                                        };
+                                        SystemShare.WorldEngine.AddQuestNpc(guildNpc);
+                                    }
                                     break;
                                 case 2:
-                                    npc = new CastleOfficial();
+                                    {
+                                        CastleOfficial castleNpc = new CastleOfficial
+                                        {
+                                            MapName = mapName,
+                                            CurrX = HUtil32.StrToInt16(cX, 0),
+                                            CurrY = HUtil32.StrToInt16(cY, 0),
+                                            ChrName = chrName,
+                                            NpcFlag = HUtil32.StrToInt16(flag, 0),
+                                            Appr = (ushort)HUtil32.StrToInt(appr, 0),
+                                        };
+                                        SystemShare.WorldEngine.AddQuestNpc(castleNpc);
+                                    }
                                     break;
-                            }
-                            if (npc != null)
-                            {
-                                npc.MapName = mapName;
-                                npc.CurrX = HUtil32.StrToInt16(cX, 0);
-                                npc.CurrY = HUtil32.StrToInt16(cY, 0);
-                                npc.ChrName = chrName;
-                                npc.NpcFlag = HUtil32.StrToInt16(flag, 0);
-                                npc.Appr = (ushort)HUtil32.StrToInt(appr, 0);
-                                SystemShare.WorldEngine.AddQuestNpc(npc);
                             }
                         }
                     }

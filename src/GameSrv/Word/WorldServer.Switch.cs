@@ -1,4 +1,4 @@
-﻿using SystemModule.Actors;
+using SystemModule.Actors;
 
 namespace GameSrv.Word
 {
@@ -117,31 +117,40 @@ namespace GameSrv.Word
             switchData.boBanGuildChat = playObject.BanGuildChat;
             switchData.boAdminMode = playObject.AdminMode;
             switchData.boObMode = playObject.ObMode;
-            for (int i = 0; i < playObject.LockWhisperList.Count; i++)
+            if (playObject.LockWhisperList != null)
             {
-                switchData.BlockWhisperArr.Add(playObject.LockWhisperList[i]);
-            }
-
-            for (int i = 0; i < playObject.SlaveList.Count; i++)
-            {
-                IActor baseObject = playObject.SlaveList[i];
-                if (i <= 4)
+                for (int i = 0; i < playObject.LockWhisperList.Count; i++)
                 {
-                    //switchData.SlaveArr[i].SlaveName = baseObject.ChrName;
-                    //switchData.SlaveArr[i].KillCount = baseObject.KillMonCount;
-                    //switchData.SlaveArr[i].SalveLevel = baseObject.SlaveMakeLevel;
-                    //switchData.SlaveArr[i].SlaveExpLevel = baseObject.SlaveExpLevel;
-                    //switchData.SlaveArr[i].RoyaltySec = (baseObject.MasterRoyaltyTick - HUtil32.GetTickCount()) / 1000;
-                    //switchData.SlaveArr[i].nHP = baseObject.Abil.HP;
-                    //switchData.SlaveArr[i].nMP = baseObject.Abil.MP;
+                    switchData.BlockWhisperArr.Add(playObject.LockWhisperList[i]);
                 }
             }
-            for (int i = 0; i < playObject.ExtraAbil.Length; i++)
+
+            if (playObject.SlaveList != null)
             {
-                if (playObject.ExtraAbil[i] > 0)
+                for (int i = 0; i < playObject.SlaveList.Count; i++)
                 {
-                    switchData.StatusValue[i] = playObject.ExtraAbil[i];
-                    switchData.StatusTimeOut[i] = playObject.ExtraAbilTimes[i];
+                    IActor baseObject = playObject.SlaveList[i];
+                    if (i <= 4)
+                    {
+                        //switchData.SlaveArr[i].SlaveName = baseObject.ChrName;
+                        //switchData.SlaveArr[i].KillCount = baseObject.KillMonCount;
+                        //switchData.SlaveArr[i].SalveLevel = baseObject.SlaveMakeLevel;
+                        //switchData.SlaveArr[i].SlaveExpLevel = baseObject.SlaveExpLevel;
+                        //switchData.SlaveArr[i].RoyaltySec = (baseObject.MasterRoyaltyTick - HUtil32.GetTickCount()) / 1000;
+                        //switchData.SlaveArr[i].nHP = baseObject.Abil.HP;
+                        //switchData.SlaveArr[i].nMP = baseObject.Abil.MP;
+                    }
+                }
+            }
+            if (playObject.ExtraAbil != null)
+            {
+                for (int i = 0; i < playObject.ExtraAbil.Length; i++)
+                {
+                    if (playObject.ExtraAbil[i] > 0)
+                    {
+                        switchData.StatusValue[i] = playObject.ExtraAbil[i];
+                        switchData.StatusTimeOut[i] = playObject.ExtraAbilTimes[i];
+                    }
                 }
             }
         }

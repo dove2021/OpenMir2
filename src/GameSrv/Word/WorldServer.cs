@@ -512,10 +512,13 @@ namespace GameSrv.Word
                                 if (!PlayerDataService.GetPlayData(userOpenInfo.QueryId, ref userOpenInfo.HumanRcd))
                                 {
                                     userOpenInfo.FailCount++;
+                                    
                                     continue;
                                 }
+                                
                                 LoadPlayerQueue.Add(i);
                                 playObject = ProcessHumansMakeNewHuman(userOpenInfo);
+                                
                                 if (playObject != null)
                                 {
                                     if (playObject.IsRobot)
@@ -562,7 +565,14 @@ namespace GameSrv.Word
                     for (int i = 0; i < NewHumanList.Count; i++)
                     {
                         playObject = NewHumanList[i];
-                        M2Share.NetChannel.SetGateUserList(playObject.GateIdx, playObject.SocketId, playObject);
+                        try
+                        {
+                            M2Share.NetChannel.SetGateUserList(playObject.GateIdx, playObject.SocketId, playObject);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogService.Warn($"[SetGateUserList skip] GateIdx={playObject.GateIdx} SocketId={playObject.SocketId} Err={ex.Message}");
+                        }
                     }
                     NewHumanList.Clear();
                     for (int i = 0; i < ListOfGateIdx.Count; i++)
@@ -575,7 +585,7 @@ namespace GameSrv.Word
                 catch (Exception e)
                 {
                     LogService.Error(sExceptionMsg1);
-                    LogService.Error(e.StackTrace);
+                    LogService.Error(e);
                 }
             }
             try
@@ -656,6 +666,7 @@ namespace GameSrv.Word
                                 if (!playObject.BoReadyRun)
                                 {
                                     playObject.BoReadyRun = true;
+                                    
                                     playObject.UserLogon();
                                 }
                                 else

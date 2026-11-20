@@ -1,4 +1,4 @@
-﻿using M2Server.Actor;
+using M2Server.Actor;
 using M2Server.Monster.Monsters;
 using OpenMir2;
 using OpenMir2.Consts;
@@ -1671,13 +1671,14 @@ namespace M2Server.Player
                     ClientMsg = Messages.MakeMessage(Messages.SM_LEVELUP, Abil.Exp, Abil.Level, 0, 0);
                     SendSocket(ClientMsg);
                     ClientMsg = Messages.MakeMessage(Messages.SM_ABILITY, Gold, HUtil32.MakeWord((byte)Job, 99), HUtil32.LoWord(GameGold), HUtil32.HiWord(GameGold));
-                    SendSocket(ClientMsg, EDCode.EncodeMessage(WAbil));
+                    SendSocket(ClientMsg, EDCode.EncodePacket(BuildDelphiTAbility(WAbil)));
                     SendDefMessage(Messages.SM_SUBABILITY, HUtil32.MakeLong(HUtil32.MakeWord(AntiMagic, 0), 0), HUtil32.MakeWord(HitPoint, SpeedPoint), HUtil32.MakeWord(AntiPoison, PoisonRecover), HUtil32.MakeWord(HealthRecover, SpellRecover));
                     break;
                 case Messages.RM_CHANGENAMECOLOR:
                     SendDefMessage(Messages.SM_CHANGENAMECOLOR, processMsg.ActorId, GetChrColor(baseObject), 0, 0);
                     break;
                 case Messages.RM_LOGON:
+                    
                     ClientMsg = Messages.MakeMessage(Messages.SM_NEWMAP, ActorId, CurrX, CurrY, DayBright());
                     SendSocket(ClientMsg, EDCode.EncodeString(MapFileName));
                     SendMsg(Messages.RM_CHANGELIGHT, 0, 0, 0, 0);
@@ -1731,11 +1732,16 @@ namespace M2Server.Player
                     break;
                 case Messages.RM_ABILITY:
                     ClientMsg = Messages.MakeMessage(Messages.SM_ABILITY, Gold, HUtil32.MakeWord((byte)Job, 99), HUtil32.LoWord(GameGold), HUtil32.HiWord(GameGold));
-                    SendSocket(ClientMsg, EDCode.EncodeMessage(WAbil));
+                    SendSocket(ClientMsg, EDCode.EncodePacket(BuildDelphiTAbility(WAbil)));
                     break;
                 case Messages.RM_HEALTHSPELLCHANGED:
-                    ClientMsg = Messages.MakeMessage(Messages.SM_HEALTHSPELLCHANGED, processMsg.ActorId, baseObject.WAbil.HP, baseObject.WAbil.MP, baseObject.WAbil.MaxHP);
-                    SendSocket(ClientMsg);
+                    ClientMsg = Messages.MakeMessage(Messages.SM_HEALTHSPELLCHANGED, processMsg.ActorId, 0, 0, 0);
+                    byte[] descBytes = new byte[12];
+                    int h = baseObject.WAbil.HP, m = baseObject.WAbil.MP, mh = baseObject.WAbil.MaxHP;
+                    Buffer.BlockCopy(BitConverter.GetBytes(h), 0, descBytes, 0, 4);
+                    Buffer.BlockCopy(BitConverter.GetBytes(m), 0, descBytes, 4, 4);
+                    Buffer.BlockCopy(BitConverter.GetBytes(mh), 0, descBytes, 8, 4);
+                    SendSocket(ClientMsg, EDCode.EncodePacket(descBytes));
                     break;
                 case Messages.RM_DAYCHANGING:
                     ClientMsg = Messages.MakeMessage(Messages.SM_DAYCHANGING, 0, Bright, DayBright(), 0);

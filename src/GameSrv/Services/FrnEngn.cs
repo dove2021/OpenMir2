@@ -89,6 +89,7 @@ namespace GameSrv.Services
                 IList<LoadDBInfo> TempList = m_LoadRcdTempList;
                 m_LoadRcdTempList = m_LoadRcdList;
                 m_LoadRcdList = TempList;
+                
                 if (m_ChangeGoldList.Any())
                 {
                     changeGoldList = new List<GoldChangeInfo>();
@@ -141,6 +142,7 @@ namespace GameSrv.Services
             try
             {
                 m_LoadRcdList.Add(loadRcdInfo);
+                
             }
             finally
             {
@@ -159,8 +161,10 @@ namespace GameSrv.Services
             HUtil32.EnterCriticalSection(UserCriticalSection);
             try
             {
+                
                 for (int i = 0; i < m_SaveRcdList.Count; i++)
                 {
+                    
                     if (string.Compare(m_SaveRcdList[i].ChrName, sChrName, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         result = true;

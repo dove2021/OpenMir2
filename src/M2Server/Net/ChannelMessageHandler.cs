@@ -1,4 +1,4 @@
-﻿using OpenMir2;
+using OpenMir2;
 using OpenMir2.Data;
 using OpenMir2.Extensions;
 using OpenMir2.Packets.ClientPackets;
@@ -169,6 +169,7 @@ namespace M2Server.Net
                         break;
                     case Grobal2.GM_DATA:
                         SessionUser gateUser = null;
+                        
                         if (msgPacket.SessionIndex >= 1)
                         {
                             nUserIdx = msgPacket.SessionIndex - 1;
@@ -304,6 +305,7 @@ namespace M2Server.Net
             const string sDisable = "*disable*";
             try
             {
+                
                 if (string.IsNullOrEmpty(gateUser.Account))
                 {
                     if (HUtil32.TagCount(sMsg, '!') > 0)
@@ -311,9 +313,12 @@ namespace M2Server.Net
                         HUtil32.ArrestStringEx(sMsg, "#", "!", ref sMsg);
                         if (GetCertification(sMsg, ref sAccount, ref sChrName, ref nSessionId, ref nClientVersion, ref boFlag, ref hwid, ref gateIdx))
                         {
+                            
                             AccountSession sessInfo = M2Share.Authentication.GetAdmission(sAccount, gateUser.IPaddr, nSessionId, ref nPayMode, ref nPayMent, ref nPlayTime);
+                            
                             if (sessInfo != null && nPayMent > 0)
                             {
+                                
                                 gateUser.Certification = true;
                                 gateUser.Account = sAccount.Trim();
                                 gateUser.ChrName = sChrName.Trim();
@@ -335,7 +340,9 @@ namespace M2Server.Net
                                     NewUserTick = HUtil32.GetTickCount(),
                                     PlayTime = nPlayTime
                                 };
+                                
                                 M2Share.FrontEngine.AddToLoadRcdList(loadRcdInfo);
+                                
                             }
                             else
                             {
@@ -354,9 +361,11 @@ namespace M2Server.Net
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                
                 LogService.Error(sExceptionMsg);
+                LogService.Error(ex);
             }
         }
 
@@ -469,6 +478,10 @@ namespace M2Server.Net
             HUtil32.EnterCriticalSection(RunSocketSection);
             try
             {
+                if (GateInfo?.UserList == null)
+                {
+                    return;
+                }
                 for (int i = 0; i < GateInfo.UserList.Count; i++)
                 {
                     SessionUser gateUserInfo = GateInfo.UserList[i];

@@ -1,4 +1,4 @@
-﻿using M2Server.Event.Events;
+using M2Server.Event.Events;
 using M2Server.Maps;
 using SystemModule.Actors;
 using SystemModule.Maps;
@@ -63,11 +63,21 @@ namespace GameSrv.Maps
 
         public void AddMapInfo(string sMapName, string sMapDesc, byte nServerNumber, MapInfoFlag mapFlag, IMerchant questNpc)
         {
+            
             string sMapFileName = string.Empty;
             string sTempName = sMapName;
             if (sTempName.IndexOf('|') > -1)
             {
-                sMapFileName = HUtil32.GetValidStr3(sTempName, ref sMapName, '|');
+                // 传奇2 MapInfo 格式 [地图文件|服务器索引]
+                // GetValidStr3: ref dest=第一段, return=第二段
+                // 所以 sMapName(ref)="3", return="0"(服务器索引)
+                string sServerIdxStr = HUtil32.GetValidStr3(sTempName, ref sMapName, '|');
+                sMapFileName = sMapName;  // 文件名用第一段（地图编号）
+                // 如果有服务器索引则覆盖
+                if (!string.IsNullOrEmpty(sServerIdxStr) && byte.TryParse(sServerIdxStr, out byte parsedIdx))
+                {
+                    nServerNumber = parsedIdx;
+                }
             }
             else
             {
@@ -92,15 +102,32 @@ namespace GameSrv.Maps
             if (M2Share.MiniMapList.TryGetValue(envirnoment.MapName, out short minMap))
             {
                 envirnoment.MinMap = minMap;
+                System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
+                    $"[AddMapInfo MinMap] MapName='{envirnoment.MapName}' MiniMapIdx={minMap}\r\n");
             }
-            if (envirnoment.LoadMapData(Path.Combine(M2Share.BasePath, SystemShare.Config.MapDir, sMapFileName + ".map")))
+            else
             {
+                System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
+                    $"[AddMapInfo MinMap] MapName='{envirnoment.MapName}' NOT FOUND in MiniMapList (count={M2Share.MiniMapList.Count})\r\n");
+            }
+            string mapPath = Path.Combine(M2Share.BasePath, SystemShare.Config.MapDir, sMapFileName + ".map");
+            
+            System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
+                $"[AddMapInfo] ENTER sMapName='{sMapName}' sMapFileName='{sMapFileName}' sMapDesc='{sMapDesc}' _mapListKeys=[{string.Join(",", _mapList.Keys.ToArray())}]\r\n");
+
+            if (envirnoment.LoadMapData(mapPath))
+            {
+                
                 if (!_mapList.ContainsKey(sMapName))
                 {
                     _mapList.Add(sMapName, envirnoment);
+                    System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
+                        $"[AddMapInfo] ADDED MapName='{sMapName}' MapDesc='{envirnoment.MapDesc}' MinMap={envirnoment.MinMap}\r\n");
                 }
                 else
                 {
+                    System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
+                        $"[AddMapInfo] SKIP DUPLICATE MapName='{sMapName}' newDesc='{sMapDesc}' existingDesc='{_mapList[sMapName].MapDesc}'\r\n");
                     LogService.Error("地图名称重复 [" + sMapName + "]，请确认配置文件是否正确.");
                 }
                 if (envirnoment.DoorList.Count > 0)
@@ -114,6 +141,7 @@ namespace GameSrv.Maps
             }
             else
             {
+                
                 LogService.Error("地图文件:" + sMapName + ".map" + "未找到,或者加载出错!!!");
             }
         }

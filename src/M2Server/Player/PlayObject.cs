@@ -1,4 +1,4 @@
-﻿using M2Server.Actor;
+using M2Server.Actor;
 using OpenMir2;
 using OpenMir2.Consts;
 using OpenMir2.Data;
@@ -7,6 +7,7 @@ using OpenMir2.Packets.ClientPackets;
 using OpenMir2.Packets.ServerPackets;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using SystemModule;
 using SystemModule.Actors;
 using SystemModule.Castles;
@@ -1127,6 +1128,7 @@ namespace M2Server.Player
         /// </summary>
         private void SendLogon()
         {
+            
             MessageBodyWL messageBodyWl = default;
             ClientMsg = Messages.MakeMessage(Messages.SM_LOGON, ActorId, CurrX, CurrY, HUtil32.MakeWord(Dir, Light));
             messageBodyWl.Param1 = GetFeatureToLong();
@@ -1144,6 +1146,103 @@ namespace M2Server.Player
             int nRecog = GetFeatureToLong();
             SendDefMessage(Messages.SM_FEATURECHANGED, ActorId, HUtil32.LoWord(nRecog), HUtil32.HiWord(nRecog), GetFeatureEx());
             SendDefMessage(Messages.SM_ATTACKMODE, (byte)AttatckMode, 0, 0, 0);
+            SendDefMessage(Messages.SM_RUNHUMAN, 0x01010101, 0, 0, 0);
+            SendDefMessage(Messages.SM_INSAFEZONEFLAG, 1, 0, 0, 0);
+
+            // SM_ABILITY: 手动构建 Delphi TAbility packed record (50字节)
+            byte[] abilBytes = BuildDelphiTAbility(WAbil);
+            ClientMsg = Messages.MakeMessage(Messages.SM_ABILITY, Gold,
+                HUtil32.MakeWord((byte)Job, 99),
+                HUtil32.LoWord(GameGold), HUtil32.HiWord(GameGold));
+            SendSocket(ClientMsg, EDCode.EncodePacket(abilBytes));
+
+            // SM_SUBABILITY(752): 附加属性（命中、敏捷、魔防等）
+            SendDefMessage(Messages.SM_SUBABILITY,
+                HUtil32.MakeLong(HUtil32.MakeWord(AntiMagic, 0), 0),
+                HUtil32.MakeWord(HitPoint, SpeedPoint),
+                HUtil32.MakeWord(AntiPoison, PoisonRecover),
+                HUtil32.MakeWord(HealthRecover, SpellRecover));
+
+            // SM_HEALTHSPELLCHANGED(53): HIGHHP=True 时 body 是 TCharDesc(3×int=12字节)
+            // Delphi: Actor.m_Abil.HP := DWORD(desc.Feature); MP := DWORD(desc.Status); MaxHP := DWORD(desc.StatusEx)
+            ClientMsg = Messages.MakeMessage(Messages.SM_HEALTHSPELLCHANGED, ActorId, 0, 0, 0);
+            // 手动构建 12 字节 TCharDesc: Feature=HP, Status=MP, StatusEx=MaxHP
+            byte[] charDesc = new byte[12];
+            int hp = WAbil.HP, mp = WAbil.MP, maxHp = WAbil.MaxHP;
+            Buffer.BlockCopy(BitConverter.GetBytes(hp), 0, charDesc, 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(mp), 0, charDesc, 4, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(maxHp), 0, charDesc, 8, 4);
+            SendSocket(ClientMsg, EDCode.EncodePacket(charDesc));
+
+            // Dump 验证
+            string hex = BitConverter.ToString(abilBytes).Replace("-", " ");
+            string descHex = BitConverter.ToString(charDesc).Replace("-", " ");
+            
+        }
+
+        /// <summary>
+        /// Delphi TAbility packed record - 客户端 HIGHHP=True 时为 DWORD (58字节)
+        /// Level:Word(2) + 5xInteger(20) + 4xDWORD HP/MP/MaxHP/MaxMP(16) + 2xDWORD(8) + 6xWord(12) = 58
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 58)]
+        private struct DelphiTAbility
+        {
+            public ushort Level;      // Word
+            public int AC;            // Integer
+            public int MAC;           // Integer
+            public int DC;            // Integer
+            public int MC;            // Integer
+            public int SC;            // Integer
+            public uint HP;           // DWORD (HIGHHP=True)
+            public uint MP;           // DWORD
+            public uint MaxHP;        // DWORD
+            public uint MaxMP;        // DWORD
+            public uint Exp;          // DWORD
+            public uint MaxExp;       // DWORD
+            public ushort Weight;     // Word
+            public ushort MaxWeight;  // Word
+            public ushort WearWeight; // Word
+            public ushort MaxWearWeight; // Word
+            public ushort HandWeight; // Word
+            public ushort MaxHandWeight; // Word
+        }
+
+        private static byte[] BuildDelphiTAbility(Ability abil)
+        {
+            var d = new DelphiTAbility
+            {
+                Level = abil.Level,
+                AC = abil.AC,
+                MAC = abil.MAC,
+                DC = abil.DC,
+                MC = abil.MC,
+                SC = abil.SC,
+                HP = abil.HP,
+                MP = abil.MP,
+                MaxHP = abil.MaxHP,
+                MaxMP = abil.MaxMP,
+                Exp = (uint)abil.Exp,
+                MaxExp = (uint)abil.MaxExp,
+                Weight = abil.Weight,
+                MaxWeight = abil.MaxWeight,
+                WearWeight = abil.WearWeight,
+                MaxWearWeight = abil.MaxWearWeight,
+                HandWeight = abil.HandWeight,
+                MaxHandWeight = abil.MaxHandWeight,
+            };
+            IntPtr ptr = IntPtr.Zero;
+            try
+            {
+                ptr = Marshal.AllocHGlobal(58);
+                Marshal.StructureToPtr(d, ptr, false);
+                byte[] bytes = new byte[58];
+                Marshal.Copy(ptr, bytes, 0, 58);
+                return bytes;
+            }
+            finally
+            {
+                if (ptr != IntPtr.Zero) Marshal.FreeHGlobal(ptr);
+            }
         }
 
         /// <summary>
@@ -1164,6 +1263,19 @@ namespace M2Server.Player
                     {
                         Gold = SystemShare.Config.TestGold;
                     }
+                    // TestServer 强制出生在土城(地图3)
+                    
+                    var tuChengMap = SystemShare.MapMgr.FindMap("3");
+                    
+                    if (tuChengMap != null)
+                    {
+                        Envir = tuChengMap;
+                        MapName = tuChengMap.MapName;
+                        MapFileName = tuChengMap.MapFileName;
+                        CurrX = 333;
+                        CurrY = 333;
+                    }
+                    
                 }
                 if (SystemShare.Config.TestServer || SystemShare.Config.ServiceMode)
                 {
@@ -3088,6 +3200,8 @@ namespace M2Server.Player
             short nEndX = (short)(CurrX + ViewRange);
             short nStartY = (short)(CurrY - ViewRange);
             short nEndY = (short)(CurrY + ViewRange);
+            int nMerchantCount = 0;
+            int nMonsterCount = 0;
             try
             {
                 //todo 需要要优化整个方法
@@ -3128,6 +3242,15 @@ namespace M2Server.Player
                                             {
                                                 if (Race < ActorRace.Animal || Master != null || WantRefMsg || baseObject.Master != null && Math.Abs(baseObject.CurrX - CurrX) <= 3 && Math.Abs(baseObject.CurrY - CurrY) <= 3 || baseObject.Race == ActorRace.Play)
                                                 {
+                                                    if (cellObject.CellType == CellType.Merchant)
+                                                    {
+                                                        nMerchantCount++;
+                                                        
+                                                    }
+                                                    if (cellObject.CellType == CellType.Monster)
+                                                    {
+                                                        nMonsterCount++;
+                                                    }
                                                     UpdateVisibleGay(baseObject);//更新自己的视野对象
                                                     if (baseObject.CellType == CellType.Monster && !ObMode && !FixedHideMode) //进入附近怪物视野
                                                     {
@@ -3224,6 +3347,7 @@ namespace M2Server.Player
                         IActor baseObject = visibleBaseObject.BaseObject;
                         if (baseObject != this)
                         {
+                            LogService.Info($"[ShowActor] Chr={ChrName} sees {baseObject.ChrName} Race={baseObject.Race} CellType={baseObject.CellType} Pos=({baseObject.CurrX},{baseObject.CurrY})");
                             if (baseObject.Death)
                             {
                                 if (baseObject.Skeleton)
@@ -3237,6 +3361,8 @@ namespace M2Server.Player
                             }
                             else
                             {
+                                // 关键修复：先 RM_ALIVE 创建 Actor，再 RM_TURN 设置方向/名字
+                                SendMsg(baseObject, Messages.RM_ALIVE, baseObject.Dir, baseObject.CurrX, baseObject.CurrY, 0);
                                 SendMsg(baseObject, Messages.RM_TURN, baseObject.Dir, baseObject.CurrX, baseObject.CurrY, 0, baseObject.GetShowName());
                             }
                         }
@@ -3285,6 +3411,7 @@ namespace M2Server.Player
                     }
                     I++;
                 }
+                
             }
             catch (Exception e)
             {

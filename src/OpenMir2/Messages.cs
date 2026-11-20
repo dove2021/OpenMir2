@@ -1,4 +1,4 @@
-﻿using OpenMir2.Packets.ClientPackets;
+using OpenMir2.Packets.ClientPackets;
 
 namespace OpenMir2
 {
@@ -434,6 +434,14 @@ namespace OpenMir2
         public const int SM_GAMEGOLDNAME = 5008;
         public const int SM_PASSWORD = 5009;
         public const int SM_HORSERUN = 5010;
+        /// <summary>
+        /// 允许在安全区跑步
+        /// </summary>
+        public const int SM_INSAFEZONEFLAG = 557;
+        /// <summary>
+        /// 允许在战斗区跑步（Recog bit flags）
+        /// </summary>
+        public const int SM_RUNHUMAN = 20003;
         public const int UNKNOWMSG = 199;
         public const int SS_OPENSESSION = 100;
         public const int SS_CLOSESESSION = 101;

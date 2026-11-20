@@ -276,6 +276,49 @@ namespace DBSrv.Services.Impl
             chrRecord.Data.Sex = (byte)nSex;
             chrRecord.Data.Job = (byte)nJob;
             chrRecord.Data.Hair = (byte)nHair;
+            switch (nJob)
+            {
+                case 0:
+                    chrRecord.Data.CurMap = "0";
+                    chrRecord.Data.CurX = 289;
+                    chrRecord.Data.CurY = 618;
+                    chrRecord.Data.HomeMap = "0";
+                    chrRecord.Data.HomeX = 289;
+                    chrRecord.Data.HomeY = 618;
+                    break;
+                case 1:
+                    chrRecord.Data.CurMap = "0";
+                    chrRecord.Data.CurX = 650;
+                    chrRecord.Data.CurY = 631;
+                    chrRecord.Data.HomeMap = "0";
+                    chrRecord.Data.HomeX = 650;
+                    chrRecord.Data.HomeY = 631;
+                    break;
+                case 2:
+                    chrRecord.Data.CurMap = "0";
+                    chrRecord.Data.CurX = 334;
+                    chrRecord.Data.CurY = 266;
+                    chrRecord.Data.HomeMap = "0";
+                    chrRecord.Data.HomeX = 334;
+                    chrRecord.Data.HomeY = 266;
+                    break;
+                default:
+                    chrRecord.Data.CurMap = "0";
+                    chrRecord.Data.CurX = 289;
+                    chrRecord.Data.CurY = 618;
+                    chrRecord.Data.HomeMap = "0";
+                    chrRecord.Data.HomeX = 289;
+                    chrRecord.Data.HomeY = 618;
+                    break;
+            }
+            chrRecord.Data.Abil = new Ability
+            {
+                Level = 1,
+                HP = 100,
+                MP = 100,
+                MaxHP = 100,
+                MaxMP = 100
+            };
             _playDataStorage.Add(chrRecord);
             return true;
         }

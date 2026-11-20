@@ -1,4 +1,4 @@
-﻿namespace GameSrv.Maps
+namespace GameSrv.Maps
 {
     public class Map
     {
@@ -63,13 +63,30 @@
                             SafeArea = false
                         };
                         sFlag = HUtil32.ArrestStringEx(sFlag, "[", "]", ref sMapName);
-                        string sMapDesc = HUtil32.GetValidStrCap(sMapName, ref sMapName, HUtil32.Separator);
-                        if (!string.IsNullOrEmpty(sMapDesc) && sMapDesc[0] == '\"')
+                        
+                        // 从 sMapName (如 "3|0") 分离地图文件名和服务器索引
+                        string sServerIdxStr = HUtil32.GetValidStr3(sMapName, ref sMapName, '|');
+                        byte nServerIndex = 0;
+                        byte.TryParse(sServerIdxStr, out nServerIndex);
+                        
+                        // 从 sFlag (如 " \"盟重省\" 3 SAFE DAY") 提取引号里的描述名
+                        string sMapDesc = string.Empty;
+                        sFlag = sFlag.Trim();
+                        if (sFlag.StartsWith("\""))
                         {
-                            HUtil32.ArrestStringEx(sMapDesc, "\"", "\"", ref sMapDesc);
+                            HUtil32.ArrestStringEx(sFlag, "\"", "\"", ref sMapDesc);
+                            // 跳过引号内容，sFlag 指向下一个空格后的内容
+                            int endQuote = sFlag.IndexOf('"', 1);
+                            if (endQuote >= 0 && endQuote + 1 < sFlag.Length)
+                            {
+                                sFlag = sFlag.Substring(endQuote + 1).Trim();
+                            }
+                            else
+                            {
+                                sFlag = string.Empty;
+                            }
                         }
-                        string s4C = HUtil32.GetValidStr3(sMapDesc, ref sMapDesc, HUtil32.Separator).Trim();
-                        byte nServerIndex = (byte)HUtil32.StrToInt(s4C, 0);
+                        
                         if (string.IsNullOrEmpty(sMapName))
                         {
                             continue;
@@ -339,6 +356,7 @@
                                 MapFlag.RequestLevel = HUtil32.StrToInt(sCommand[1..], 1);
                             }
                         }
+                        
                         SystemShare.MapMgr.AddMapInfo(sMapName, sMapDesc, nServerIndex, MapFlag, QuestNPC);
                         result = 1;
                     }
@@ -346,9 +364,16 @@
                     Console.Write("\r正在读取地图数据...[{0}/{1}]", i, loadList.Count);
                 }
                 Console.Write("\n"); // 完成后换行
-                Console.SetCursorPosition(0, Console.CursorTop - 1); // 将光标移动到上一行
-                Console.Write(new string(' ', Console.WindowWidth)); // 使用空格覆盖这一行
-                Console.SetCursorPosition(0, Console.CursorTop - 1); // 再次将光标移动到上一行
+                try
+                {
+                    Console.SetCursorPosition(0, Console.CursorTop - 1); // 将光标移动到上一行
+                    Console.Write(new string(' ', Console.WindowWidth)); // 使用空格覆盖这一行
+                    Console.SetCursorPosition(0, Console.CursorTop - 1); // 再次将光标移动到上一行
+                }
+                catch (IOException)
+                {
+                    // 无控制台环境下忽略光标操作
+                }
                 
                 // 加载地图连接点
                 for (int i = 0; i < loadList.Count; i++)

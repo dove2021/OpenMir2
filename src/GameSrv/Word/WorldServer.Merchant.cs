@@ -1,4 +1,4 @@
-﻿using SystemModule.Actors;
+using SystemModule.Actors;
 using SystemModule.Maps;
 
 namespace GameSrv.Word
@@ -7,6 +7,7 @@ namespace GameSrv.Word
     {
         private void MerchantInitialize()
         {
+            
             for (int i = MerchantList.Count - 1; i >= 0; i--)
             {
                 IMerchant merchant = MerchantList[i];
@@ -15,13 +16,16 @@ namespace GameSrv.Word
                 {
                     merchant.OnEnvirnomentChanged();
                     merchant.Initialize();
-                    if (merchant.AddtoMapSuccess && !merchant.IsHide)
+                    
+                    if (!merchant.AddtoMapSuccess && !merchant.IsHide)
                     {
-                        LogService.Warn("Merchant Initalize fail..." + merchant.ChrName + ' ' + merchant.MapName + '(' + merchant.CurrX + ':' + merchant.CurrY + ')');
+                        LogService.Warn("Merchant Initialize fail..." + merchant.ChrName + ' ' + merchant.MapName + '(' + merchant.CurrX + ':' + merchant.CurrY + ')');
                         MerchantList.RemoveAt(i);
                     }
                     else
                     {
+                        // 关键修复：Merchant 加入地图后必须立即广播 SM_ALIVE，否则客户端看不到
+                        merchant.SendRefMsg(OpenMir2.Messages.RM_ALIVE, merchant.Dir, merchant.CurrX, merchant.CurrY, 0, "");
                         merchant.LoadMerchantScript();
                         merchant.LoadNpcData();
                     }
@@ -32,6 +36,7 @@ namespace GameSrv.Word
                     MerchantList.RemoveAt(i);
                 }
             }
+            
         }
 
         private void NpCinitialize()
@@ -51,6 +56,8 @@ namespace GameSrv.Word
                     }
                     else
                     {
+                        // 关键修复：NPC 加入地图后必须立即广播 SM_ALIVE，否则客户端看不到
+                        normNpc.SendRefMsg(OpenMir2.Messages.RM_ALIVE, normNpc.Dir, normNpc.CurrX, normNpc.CurrY, 0, "");
                         normNpc.LoadNPCScript();
                     }
                 }

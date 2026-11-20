@@ -984,6 +984,7 @@ namespace M2Server
             }
             else
             {
+                LoadList = new StringList();
                 LoadList.SaveToFile(sFileName);
             }
             return result;

@@ -1,4 +1,4 @@
-﻿using M2Server.Actor;
+using M2Server.Actor;
 using M2Server.Event.Events;
 using M2Server.Items;
 using M2Server.Magic;
@@ -673,6 +673,7 @@ namespace M2Server.Player
 
         private void ClientClickNpc(int actorId)
         {
+            
             if (!IsCanDeal)
             {
                 SendMsg(SystemShare.ManageNPC, Messages.RM_MENU_OK, 0, ActorId, 0, 0, MessageSettings.CanotTryDealMsg);
@@ -686,8 +687,10 @@ namespace M2Server.Player
             {
                 ClickNpcTime = HUtil32.GetTickCount();
                 INormNpc normNpc = SystemShare.WorldEngine.FindMerchant(actorId) ?? SystemShare.WorldEngine.FindNpc(actorId);
+                
                 if (normNpc != null)
                 {
+                    
                     if (normNpc.Envir == Envir && Math.Abs(normNpc.CurrX - CurrX) <= 15 && Math.Abs(normNpc.CurrY - CurrY) <= 15)
                     {
                         normNpc.Click(this);
@@ -891,6 +894,8 @@ namespace M2Server.Player
             {
                 nMusicid = Envir.Flag.MusicId;
             }
+            System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
+                $"[SendMapDescription] ChrName={ChrName} EnvirMap={Envir?.MapName} MapDesc='{Envir?.MapDesc}'\r\n");
             SendDefMessage(Messages.SM_MAPDESCRIPTION, nMusicid, 0, 0, 0, Envir.MapDesc);
         }
 

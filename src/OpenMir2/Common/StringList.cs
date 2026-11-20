@@ -259,6 +259,15 @@ namespace OpenMir2.Common
         /// <param name="fileName"></param>
         public void SaveToFile(string fileName)
         {
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                string directory = Path.GetDirectoryName(fileName);
+                if (!string.IsNullOrEmpty(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+            }
+
             Encoding fs = GetEncoding(fileName, Encoding.GetEncoding("gb2312"));
             StreamWriter sw2 = new StreamWriter(fileName, false, fs);
             for (int i = 0; i < this.Count; i++)
@@ -292,6 +301,11 @@ namespace OpenMir2.Common
 
         private static Encoding GetEncoding(string fileName, Encoding defaultEncoding)
         {
+            if (string.IsNullOrEmpty(fileName) || !File.Exists(fileName))
+            {
+                return defaultEncoding;
+            }
+
             FileStream fs = new FileStream(fileName, FileMode.Open);
             Encoding targetEncoding = GetEncoding(fs, defaultEncoding);
             fs.Close();

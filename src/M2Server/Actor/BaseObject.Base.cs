@@ -1,4 +1,4 @@
-﻿using M2Server.Magic;
+using M2Server.Magic;
 using M2Server.Monster;
 using OpenMir2;
 using OpenMir2.Consts;
@@ -14,10 +14,10 @@ namespace M2Server.Actor
         public virtual void Initialize()
         {
             AbilCopyToWAbil();
-            AddtoMapSuccess = true;
+            AddtoMapSuccess = false;
             if (Envir.CanWalk(CurrX, CurrY, true) && AddToMap())
             {
-                AddtoMapSuccess = false;
+                AddtoMapSuccess = true;
             }
             CharStatus = GetCharStatus();
         }

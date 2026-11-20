@@ -51,7 +51,14 @@ namespace GameGate.Services
 
         public void Start(CancellationToken stoppingToken)
         {
-            _serverSocket.StartAsync();
+            try
+            {
+                _serverSocket.Start();
+            }
+            catch (Exception ex)
+            {
+                LogService.Error($"游戏网关[{_gateEndPoint}]启动失败: {ex.Message}");
+            }
             _ = _clientThread.Start();
             _clientThread.RestSessionArray();
             _messageSendQueue.StartProcessQueueSend(stoppingToken);

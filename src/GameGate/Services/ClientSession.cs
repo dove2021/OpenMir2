@@ -106,6 +106,7 @@ namespace GameGate.Services
             }
             Span<byte> destinationSpan = messagePacket.Data.AsSpan();
             ushort packetLen = messagePacket.BuffLen;
+            
             if (Config.IsDefenceCCPacket && (packetLen >= 5))
             {
                 if (destinationSpan[..7].SequenceEqual(_httpSpan))
@@ -152,6 +153,7 @@ namespace GameGate.Services
             bool success = false;
             if (HandleLogin)
             {
+                
                 if (packetLen < GateShare.CommandFixedLength)
                 {
                     if (packetLen == 1) //心跳包
@@ -671,7 +673,9 @@ namespace GameGate.Services
             else
             {
                 string tempStr = EDCode.DeCodeString(destinationSpan[2..(packetLen - 1)]);
+                
                 ClientLogin(tempStr, packetLen, "", ref success);
+                
                 if (!success)
                 {
                     LogService.Info("客户端登陆消息处理失败，剔除链接");
@@ -695,6 +699,7 @@ namespace GameGate.Services
             {
                 if (delayMsg.BufLen > 0)
                 {
+                    
                     ClientThread.Send(delayMsg.Buffer); //发送消息到GameSvr
                     int dwCurrentTick = HUtil32.GetTickCount();
                     switch (delayMsg.Cmd)

@@ -1,4 +1,4 @@
-﻿using TcpClient = TouchSocket.Sockets.TcpClient;
+using TcpClient = TouchSocket.Sockets.TcpClient;
 
 namespace GameSrv.Services
 {
@@ -24,12 +24,17 @@ namespace GameSrv.Services
 
         public void Initialize()
         {
-            _tcpClient.Setup(new TouchSocketConfig()
-            .SetRemoteIPHost(new IPHost(IPAddress.Parse(SystemShare.Config.sDBAddr), SystemShare.Config.nDBPort))
-            .ConfigureContainer(a =>
-            {
-                a.AddConsoleLogger();
-            }));
+            TouchSocketConfig config = new TouchSocketConfig()
+                .SetRemoteIPHost(new IPHost(IPAddress.Parse(SystemShare.Config.sDBAddr), SystemShare.Config.nDBPort))
+                .ConfigureContainer(a =>
+                {
+                    a.AddConsoleLogger();
+                })
+                .ConfigurePlugins(x =>
+                {
+                    x.UseReconnection();
+                });
+            _tcpClient.Setup(config);
         }
 
         public async Task Start()
