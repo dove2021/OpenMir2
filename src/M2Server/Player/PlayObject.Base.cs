@@ -467,7 +467,7 @@ namespace M2Server.Player
                     {
                         CurrX = nOldX;
                         CurrY = nOldY;
-                        Envir.MoveToMovingObject(nOldX, nOldY, this, CurrX, CurrX, true);
+                        Envir.MoveToMovingObject(nOldX, nOldY, this, CurrX, CurrY, true);
                     }
                 }
             }
@@ -561,7 +561,7 @@ namespace M2Server.Player
                     {
                         CurrX = nOldX;
                         CurrY = nOldY;
-                        Envir.MoveToMovingObject(nOldX, nOldY, this, CurrX, CurrX, true);
+                        Envir.MoveToMovingObject(nOldX, nOldY, this, CurrX, CurrY, true);
                     }
                 }
             }
@@ -894,8 +894,6 @@ namespace M2Server.Player
             {
                 nMusicid = Envir.Flag.MusicId;
             }
-            System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
-                $"[SendMapDescription] ChrName={ChrName} EnvirMap={Envir?.MapName} MapDesc='{Envir?.MapDesc}'\r\n");
             SendDefMessage(Messages.SM_MAPDESCRIPTION, nMusicid, 0, 0, 0, Envir.MapDesc);
         }
 

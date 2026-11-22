@@ -74,6 +74,55 @@ namespace GameSrv
                     ShowWordStatus(_cancellationTokenSource.Token);
                 });
             });
+            _application.Command("minmap", command =>
+            {
+                command.Description = "设置小地图索引 (minmap <mapName> <value>)";
+                var mapArg = command.Argument("mapName", "地图名，如 3");
+                var valArg = command.Argument("value", "MiniMap值，如 4");
+                command.OnExecute(() =>
+                {
+                    if (int.TryParse(mapArg.Value, out int mapNo) && int.TryParse(valArg.Value, out int minVal))
+                    {
+                        M2Share.MiniMapList[mapNo.ToString()] = (short)minVal;
+                        Console.WriteLine($"[MiniMap] 地图 {mapNo} 小地图索引已设置为 {minVal}（切换地图或重进生效）");
+                    }
+                    else
+                    {
+                        Console.WriteLine("用法: minmap <mapName> <value>");
+                        Console.WriteLine("  例如: minmap 3 4  (设置地图3的MiniMap为4)");
+                        Console.WriteLine("  例如: minmap 0 2  (设置地图0的MiniMap为2)");
+                        Console.WriteLine("当前 MiniMapList 内容:");
+                        foreach (var kv in M2Share.MiniMapList)
+                        {
+                            Console.WriteLine($"  地图 {kv.Key} -> MiniMap={kv.Value}");
+                        }
+                    }
+                });
+            });
+            _application.Command("reloadminmap", command =>
+            {
+                command.Description = "重新加载 MiniMap.txt 并更新所有已加载地图";
+                command.OnExecute(() =>
+                {
+                    GameSrv.Maps.Map.LoadMinMap();
+                    Console.WriteLine("[MiniMap] MiniMap.txt 已重新加载");
+                    int updated = 0;
+                    foreach (var env in SystemShare.MapMgr.Maps)
+                    {
+                        if (M2Share.MiniMapList.TryGetValue(env.MapName, out short minVal))
+                        {
+                            env.MinMap = minVal;
+                            updated++;
+                        }
+                    }
+                    Console.WriteLine($"[MiniMap] 已更新 {updated} 个已加载地图");
+                    Console.WriteLine("当前 MiniMapList (非零):");
+                    foreach (var kv in M2Share.MiniMapList)
+                    {
+                        if (kv.Value > 0) Console.WriteLine($"  地图 {kv.Key} -> MiniMap={kv.Value}");
+                    }
+                });
+            });
         }
 
         public Task StartingAsync(CancellationToken cancellationToken)

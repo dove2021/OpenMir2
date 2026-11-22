@@ -433,7 +433,11 @@ namespace GameSrv.Maps
                     }
                 }
             }
-            LogService.Info("小地图数据加载成功...");
+            LogService.Info($"小地图数据加载成功...共[{M2Share.MiniMapList.Count}]条配置");
+            foreach (var kv in M2Share.MiniMapList)
+            {
+                LogService.Info($"MiniMap: 地图[{kv.Key}] -> 值[{kv.Value}]");
+            }
             return result;
         }
 

@@ -102,32 +102,19 @@ namespace GameSrv.Maps
             if (M2Share.MiniMapList.TryGetValue(envirnoment.MapName, out short minMap))
             {
                 envirnoment.MinMap = minMap;
-                System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
-                    $"[AddMapInfo MinMap] MapName='{envirnoment.MapName}' MiniMapIdx={minMap}\r\n");
-            }
-            else
-            {
-                System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
-                    $"[AddMapInfo MinMap] MapName='{envirnoment.MapName}' NOT FOUND in MiniMapList (count={M2Share.MiniMapList.Count})\r\n");
+                LogService.Info($"[AddMapInfo] 地图[{envirnoment.MapName}] MiniMap={minMap}");
             }
             string mapPath = Path.Combine(M2Share.BasePath, SystemShare.Config.MapDir, sMapFileName + ".map");
-            
-            System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
-                $"[AddMapInfo] ENTER sMapName='{sMapName}' sMapFileName='{sMapFileName}' sMapDesc='{sMapDesc}' _mapListKeys=[{string.Join(",", _mapList.Keys.ToArray())}]\r\n");
 
             if (envirnoment.LoadMapData(mapPath))
             {
-                
+
                 if (!_mapList.ContainsKey(sMapName))
                 {
                     _mapList.Add(sMapName, envirnoment);
-                    System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
-                        $"[AddMapInfo] ADDED MapName='{sMapName}' MapDesc='{envirnoment.MapDesc}' MinMap={envirnoment.MinMap}\r\n");
                 }
                 else
                 {
-                    System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
-                        $"[AddMapInfo] SKIP DUPLICATE MapName='{sMapName}' newDesc='{sMapDesc}' existingDesc='{_mapList[sMapName].MapDesc}'\r\n");
                     LogService.Error("地图名称重复 [" + sMapName + "]，请确认配置文件是否正确.");
                 }
                 if (envirnoment.DoorList.Count > 0)

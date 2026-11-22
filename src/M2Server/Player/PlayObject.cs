@@ -897,7 +897,7 @@ namespace M2Server.Player
             TimeRecallMoveX = 0;
             TimeRecallMoveY = 0;
             RunTick = HUtil32.GetTickCount();
-            RunTime = 250;
+            RunTime = 50;
             SearchTime = 1000;
             SearchTick = HUtil32.GetTickCount();
             AllowGroup = false;

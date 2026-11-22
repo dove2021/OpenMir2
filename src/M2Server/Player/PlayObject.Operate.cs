@@ -1203,8 +1203,7 @@ namespace M2Server.Player
 
         private void ClientGetMinMap()
         {
-            System.IO.File.AppendAllText("D:\\MirServer\\Mir200\\debug_load.log",
-                $"[ClientGetMinMap] ChrName={ChrName} MapName={MapName} EnvirMap={Envir?.MapName} MinMap={Envir?.MinMap}\r\n");
+            LogService.Info($"[ClientGetMinMap] ChrName={ChrName} MapName={MapName} MinMap={Envir?.MinMap}");
             if (Envir.MinMap > 0)
             {
                 SendDefMessage(Messages.SM_READMINIMAP_OK, 0, Envir.MinMap, 0, 0);
