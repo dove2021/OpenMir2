@@ -142,6 +142,7 @@ namespace GameSrv.Maps
             bool result = false;
             IEnvirnoment sEnvir = FindMap(sSMapNo);
             IEnvirnoment dEnvir = FindMap(sDMapNo);
+            Console.WriteLine($"[AddMapRoute] {sSMapNo}({nSMapX},{nSMapY}) -> {sDMapNo}({nDMapX},{nDMapY}) sEnvir={sEnvir?.MapName ?? "NULL"} dEnvir={dEnvir?.MapName ?? "NULL"}");
             if (sEnvir != null && dEnvir != null)
             {
                 MapRouteItem mapRoute = new MapRouteItem
@@ -200,6 +201,37 @@ namespace GameSrv.Maps
             {
                 this.Maps[i].AddDoorToMap();
             }
+            // 调试: 打印 DoorList 和 MapRoute 统计
+            int totalDoors = 0;
+            int totalRoutes = 0;
+            foreach (var env in Maps)
+            {
+                var envType = env.GetType();
+                var doorListProp = envType.GetProperty("DoorList");
+                if (doorListProp != null)
+                {
+                    var doorList = doorListProp.GetValue(env) as System.Collections.IList;
+                    if (doorList != null && doorList.Count > 0)
+                    {
+                        totalDoors += doorList.Count;
+                        // 只打印前3个有Door的地图
+                        if (totalDoors <= 10 || env.MapName == "0" || env.MapName == "3")
+                        {
+                            Console.WriteLine($"[DoorList] 地图 {env.MapName} DoorCount={doorList.Count}");
+                            foreach (var door in doorList)
+                            {
+                                var dt = door.GetType();
+                                var xField = dt.GetField("nX");
+                                var yField = dt.GetField("nY");
+                                var x = xField?.GetValue(door);
+                                var y = yField?.GetValue(door);
+                                Console.WriteLine($"  Door ({x},{y})");
+                            }
+                        }
+                    }
+                }
+            }
+            LogService.Info($"地图 DoorList 总计: {totalDoors} 个");
             LogService.Info("地图环境加载成功...");
         }
 

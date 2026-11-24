@@ -99,6 +99,73 @@ namespace GameSrv
                     }
                 });
             });
+            _application.Command("doors", command =>
+            {
+                command.Description = "打印指定地图的所有Door和MapRoute (doors <mapName>)";
+                var mapArg = command.Argument("mapName", "地图名，如 0");
+                command.OnExecute(() =>
+                {
+                    var mapName = mapArg.Value;
+                    var env = SystemShare.MapMgr.FindMap(mapName);
+                    if (env == null) { Console.WriteLine($"地图 {mapName} 未找到"); return; }
+                    var type = env.GetType();
+                    var doorListProp = type.GetProperty("DoorList");
+                    var cellObjProp = type.GetProperty("CellObjectMgr") ?? null;
+                    Console.WriteLine($"=== 地图 {mapName} DoorList ===");
+                    var doorList = doorListProp?.GetValue(env) as System.Collections.IList;
+                    if (doorList != null)
+                    {
+                        Console.WriteLine($"DoorList.Count = {doorList.Count}");
+                        foreach (var door in doorList)
+                        {
+                            var dp = door.GetType().GetProperties();
+                            var x = dp.FirstOrDefault(p => p.Name == "nX")?.GetValue(door);
+                            var y = dp.FirstOrDefault(p => p.Name == "nY")?.GetValue(door);
+                            var status = dp.FirstOrDefault(p => p.Name == "Status")?.GetValue(door);
+                            var opened = status?.GetType().GetProperty("Opened")?.GetValue(status);
+                            Console.WriteLine($"  Door ({x},{y}) Opened={opened}");
+                        }
+                    }
+                    else Console.WriteLine("  DoorList 为空");
+                    // 查 CellObject 里的 MapRoute
+                    var cellArrayProp = type.GetProperty("CellArray");
+                    if (cellArrayProp != null)
+                    {
+                        Console.WriteLine("=== 扫描 CellObject 找 MapRoute ===");
+                        int found = 0;
+                        var cells = cellArrayProp.GetValue(env) as Array;
+                        int width = (int)type.GetProperty("Width").GetValue(env);
+                        int height = (int)type.GetProperty("Height").GetValue(env);
+                        for (int x = 0; x < width; x++)
+                        {
+                            for (int y = 0; y < height; y++)
+                            {
+                                int idx = x * height + y;
+                                if (idx >= cells.Length) continue;
+                                var cell = cells.GetValue(idx);
+                                if (cell == null) continue;
+                                var cellType = cell.GetType();
+                                var objListProp = cellType.GetProperty("ObjList");
+                                if (objListProp == null) continue;
+                                var objList = objListProp.GetValue(cell) as System.Collections.IList;
+                                if (objList == null) continue;
+                                foreach (var obj in objList)
+                                {
+                                    var ctProp = obj.GetType().GetProperty("CellType");
+                                    if (ctProp == null) continue;
+                                    var ct = ctProp.GetValue(obj);
+                                    if (ct.ToString().Contains("MapRoute"))
+                                    {
+                                        Console.WriteLine($"  MapRoute ({x},{y}) CellObjId={obj.GetType().GetProperty("CellObjId")?.GetValue(obj)}");
+                                        found++;
+                                    }
+                                }
+                            }
+                        }
+                        Console.WriteLine($"共找到 {found} 个 MapRoute");
+                    }
+                });
+            });
             _application.Command("reloadminmap", command =>
             {
                 command.Description = "重新加载 MiniMap.txt 并更新所有已加载地图";

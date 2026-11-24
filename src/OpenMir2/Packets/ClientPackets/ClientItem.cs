@@ -1,4 +1,4 @@
-﻿using OpenMir2.Extensions;
+using OpenMir2.Extensions;
 using System.IO;
 
 namespace OpenMir2.Packets.ClientPackets
@@ -22,70 +22,50 @@ namespace OpenMir2.Packets.ClientPackets
             throw new System.NotImplementedException();
         }
 
+        /// <summary>
+        /// 严格匹配 Delphi 客户端 TClientItem 字节布局 (Grobal2.pas)：
+        /// TClientStdItem(116字节) + MakeIndex(4) + Dura(2) + DuraMax(2) = 124字节
+        /// 客户端 DecodeBuffer 裸 memcpy，布局必须逐字节一致
+        /// </summary>
         protected override void WritePacket(BinaryWriter writer)
         {
-            writer.WriteAsciiString(Item.Name, ClientPacketConst.ItemNameLen);
+            writer.WriteAsciiString(Item.Name, 20); // shortstring[ItemNameLen=20]: 1字节长度前缀 + 20字节
             writer.Write(Item.StdMode);
             writer.Write(Item.Shape);
             writer.Write(Item.Weight);
-            writer.Write(Item.AniCount);
-            writer.Write(Item.SpecialPwr);
-            writer.Write(Item.ItemDesc);
-            writer.Write((byte)0);
+            writer.Write((ushort)Item.AniCount); // 客户端为 Word
+            writer.Write(Item.SpecialPwr);       // Source
+            writer.Write(Item.ItemDesc);         // Reserved
+            writer.Write(Item.NeedIdentify);
             writer.Write(Item.Looks);
             writer.Write(Item.DuraMax);
-            writer.Write(Item.AC);
-            writer.Write(Item.MAC);
-            writer.Write(Item.DC);
-            writer.Write(Item.MC);
-            writer.Write(Item.SC);
-            writer.Write(Item.Need);
-            writer.Write(Item.NeedLevel);
-            writer.Write(Item.NeedIdentify);
-            writer.Write((byte)0);
+            writer.Write(UnpackAbil(Item.AC));  // 客户端为 Integer: LoWord=最小值 HiWord=最大值
+            writer.Write(UnpackAbil(Item.MAC));
+            writer.Write(UnpackAbil(Item.DC));
+            writer.Write(UnpackAbil(Item.MC));
+            writer.Write(UnpackAbil(Item.SC));
+            writer.Write((int)Item.Need);       // 客户端为 Integer
+            writer.Write((int)Item.NeedLevel);  // 客户端为 Integer
             writer.Write(Item.Price);
-            writer.Write(Item.Stock);
-            writer.Write(Item.AtkSpd);
-            writer.Write(Item.Agility);
-            writer.Write(Item.Accurate);
-            writer.Write(Item.MgAvoid);
-            writer.Write(Item.Strong);
-            writer.Write(Item.Undead);
-            writer.Write((byte)0);
-            writer.Write((byte)0);
-            writer.Write(Item.HpAdd);
-            writer.Write(Item.MpAdd);
-            writer.Write(Item.ExpAdd);
-            writer.Write(Item.EffType1);
-            writer.Write(Item.EffRate1);
-            writer.Write(Item.EffValue1);
-            writer.Write(Item.EffType2);
-            writer.Write(Item.EffRate2);
-            writer.Write(Item.EffValue2);
-            writer.Write(Item.Slowdown);
-            writer.Write(Item.Tox);
-            writer.Write(Item.ToxAvoid);
             writer.Write(Item.UniqueItem);
             writer.Write(Item.OverlapItem);
-            writer.Write(Item.Light);
             writer.Write(Item.ItemType);
-            writer.Write((byte)0);
             writer.Write(Item.ItemSet);
-            if (string.IsNullOrEmpty(Item.Reference))
-            {
-                writer.WriteAsciiString("", ClientPacketConst.ItemNameLen);
-            }
-            else
-            {
-                writer.WriteAsciiString(Item.Reference, ClientPacketConst.ItemNameLen);
-            }
-            writer.Write((byte)0);
+            writer.Write((byte)0);              // Binded
+            writer.Write(new byte[9]);          // reserve
+            writer.Write(new byte[10]);         // AddOn
+            writer.Write(new byte[26]);         // Eva (TEvaluation)
             writer.Write(MakeIndex);
             writer.Write(Dura);
             writer.Write(DuraMax);
-            writer.Write(Desc, 0, Desc.Length);
-            writer.Write((byte)0);
-            writer.Write((byte)0);
+        }
+
+        /// <summary>
+        /// 服务端属性打包格式 min|max&lt;&lt;8 (ushort) 转换为客户端 Integer 格式 LoWord=min, HiWord=max
+        /// </summary>
+        private static int UnpackAbil(ushort abil)
+        {
+            return (abil & 0xFF) | ((abil >> 8) << 16);
         }
 
         public class ClientStdItem

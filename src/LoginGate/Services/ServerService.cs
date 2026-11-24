@@ -77,6 +77,8 @@ public class ServerService
         }
 
         LogService.Debug($"用户[{sRemoteAddress}]分配到数据库服务器[{clientThread.ClientId}] Server:{clientThread.EndPoint}");
+        string sessionConnId = ((SocketClient)client).Id;
+        LogService.Info($"[DEBUG] ServerSocketClientConnect Id={sessionConnId} IP={client.IP}");
         TSessionInfo sessionInfo = null;
 
         for (int nIdx = 0; nIdx < GateShare.MaxSession; nIdx++)
@@ -85,7 +87,7 @@ public class ServerService
             if (sessionInfo == null)
             {
                 sessionInfo = new TSessionInfo();
-                sessionInfo.ConnectionId = ((SocketClient)client).Id;
+                sessionInfo.ConnectionId = sessionConnId;
                 sessionInfo.ReceiveTick = HUtil32.GetTickCount();
                 sessionInfo.ClientIP = client.IP;
                 clientThread.SessionArray[nIdx] = sessionInfo;
@@ -137,6 +139,7 @@ public class ServerService
         message.ClientIP = client.IP;
         message.Body = data;
         message.ConnectionId = client.Id;
+        LogService.Info($"[DEBUG] ServerSocketClientRead Id={message.ConnectionId} BodyLen={data.Length}");
         _serverManager.SendQueue(message);
         return Task.CompletedTask;
     }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
+using Serilog;
 using Spectre.Console;
 using System;
 using System.Runtime;
@@ -16,7 +17,7 @@ namespace GameGate
 {
     internal class Program
     {
-        private static Logger LogService;
+        private static NLog.Logger LogService;
         private static readonly PeriodicTimer _timer;
         private static readonly CancellationTokenSource CancellationToken = new CancellationTokenSource();
 
@@ -51,6 +52,10 @@ namespace GameGate
                     logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
                     logging.AddNLog(config);
                 });
+            OpenMir2.LogService.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateLogger();
+
             await builder.StartAsync(CancellationToken.Token);
             await ProcessLoopAsync();
             Stop();

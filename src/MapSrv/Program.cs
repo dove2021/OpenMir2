@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
+using Serilog;
 using Spectre.Console;
 using System;
 using System.Text;
@@ -48,6 +49,10 @@ namespace MapSrv
                     logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
                     logging.AddNLog(config);
                 });
+
+            OpenMir2.LogService.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateLogger();
 
             _host = await builder.StartAsync(cts.Token);
             await ProcessLoopAsync();

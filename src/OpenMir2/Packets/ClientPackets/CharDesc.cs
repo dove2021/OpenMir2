@@ -7,5 +7,6 @@ namespace OpenMir2.Packets.ClientPackets
     {
         public int Feature;
         public int Status;
+        public int StatusEx;
     }
 }

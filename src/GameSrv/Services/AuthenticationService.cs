@@ -426,13 +426,30 @@ namespace GameSrv.Services
 
         private Task DataSocketDisconnect(ITcpClientBase sender, DisconnectEventArgs e)
         {
-            // if (!Settings.Config.boIDSocketConnected)
-            // {
-            //     return;
-            // }
             ClearSession();
-            LogService.Error("登录服务器[" + sender.IP + "]断开连接...");
+            LogService.Error("登录服务器[" + sender.IP + "]断开连接... 开始自动重连");
+            _ = ReconnectAsync();
             return Task.CompletedTask;
+        }
+
+        private async Task ReconnectAsync()
+        {
+            int retryCount = 0;
+            while (!_tcpClient.Online && retryCount < 100)
+            {
+                retryCount++;
+                await Task.Delay(3000);
+                try
+                {
+                    LogService.Info($"自动重连登录服务器 第 {retryCount} 次...");
+                    await _tcpClient.ConnectAsync();
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    LogService.Warn($"重连登录服务器失败: {ex.Message}");
+                }
+            }
         }
 
         public void Close()

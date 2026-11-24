@@ -34,6 +34,13 @@ public class ClientSession
     /// <param name="userData"></param>
     public void ProcessClientPacket(MessageData userData)
     {
+        // 边界检查：Body 长度必须 >= 3 (#...! 帧格式)
+        if (userData.Body == null || userData.Body.Length < 3)
+        {
+            LogService.Warn($"丢弃短包 BodyLen={userData.Body.Length} MsgLen={userData.MsgLen} ClientIP={userData.ClientIP}");
+            return;
+        }
+
         if (userData.MsgLen >= 5 && Config.DefenceCCPacket)
         {
             string sMsg = HUtil32.GetString(userData.Body, 2, userData.MsgLen - 3);
@@ -49,30 +56,19 @@ public class ClientSession
             }
         }
 
-        byte[] tempBuff = userData.Body[2..^1]; //跳过#....! 只保留消息内容
-        int nDeCodeLen = 0;
-        Span<byte> packBuff = EncryptUtil.DecodeSpan(tempBuff, userData.MsgLen - 3, ref nDeCodeLen);
-        string sReviceMsg = HUtil32.GetString(userData.Body, 0, userData.Body.Length);
-        if (!string.IsNullOrEmpty(sReviceMsg))
-        {
-            int nPos = sReviceMsg.IndexOf("*", StringComparison.OrdinalIgnoreCase);
-            if (nPos > 0)
-            {
-                string s10 = sReviceMsg[..(nPos - 1)];
-                string s1C = sReviceMsg[nPos..];
-                sReviceMsg = s10 + s1C;
-            }
+        // 直接原样转发给 LoginSrv — 中间解码代码实际未使用
+        ServerDataMessage accountPacket = new ServerDataMessage();
+        accountPacket.Data = userData.Body;
+        accountPacket.DataLen = (short)userData.Body.Length;
+        accountPacket.Type = ServerDataType.Data;
+        accountPacket.SocketId = Session.ConnectionId;
+        _lastLoginSvr.SendClientPacket(accountPacket);
 
-            if (!string.IsNullOrEmpty(sReviceMsg))
-            {
-                ServerDataMessage accountPacket = new ServerDataMessage();
-                accountPacket.Data = userData.Body;
-                accountPacket.DataLen = (short)userData.Body.Length;
-                accountPacket.Type = ServerDataType.Data;
-                accountPacket.SocketId = Session.ConnectionId;
-                _lastLoginSvr.SendClientPacket(accountPacket);
-            }
-        }
+        // 调试日志：hex dump 前 64 字节
+        int dumpLen = Math.Min(userData.Body.Length, 64);
+        string hexDump = BitConverter.ToString(userData.Body, 0, dumpLen).Replace("-", " ");
+        string bodyStr = System.Text.Encoding.GetEncoding("GBK").GetString(userData.Body, 0, Math.Min(userData.Body.Length, 128));
+        LogService.Info($"[LoginGate] 客户端→LoginSrv BodyLen={userData.Body.Length} Hex={hexDump} | Text={bodyStr}");
 
         /*if (CltCmd.Cmd == Messages.CM_QUERYDYNCODE)
         {

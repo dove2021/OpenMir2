@@ -1,3 +1,5 @@
+using OpenMir2.DataHandlingAdapters;
+
 /// <summary>
 /// 网关客户端(LoginGate-LoginSrv)
 /// </summary>
@@ -49,10 +51,12 @@ public class ClientThread
     {
         gameGateInfo = gateInfo;
         var config = new TouchSocketConfig()
-        .SetRemoteIPHost(new IPHost(IPAddress.Parse(gateInfo.LoginServer), gateInfo.LoginPort)).ConfigureContainer(a =>
-        {
-            a.AddConsoleLogger();
-        });
+            .SetRemoteIPHost(new IPHost(IPAddress.Parse(gateInfo.LoginServer), gateInfo.LoginPort))
+            .SetTcpDataHandlingAdapter(() => new ServerPacketFixedHeaderDataHandlingAdapter())
+            .ConfigureContainer(a =>
+            {
+                a.AddConsoleLogger();
+            });
         _clientSocket.Setup(config);
     }
 
@@ -130,8 +134,31 @@ public class ClientThread
         RestSessionArray();
         ConnectState = false;
         //_clientManager.DeleteClientThread(e.SocketHandle);
-        LogService.Info($"账号服务器[{((TcpClientBase)client).RemoteIPHost.EndPoint}]断开链接.");
+        LogService.Info($"账号服务器[{((TcpClientBase)client).RemoteIPHost.EndPoint}]断开链接. 开始自动重连...");
+
+        // 自动重连
+        _ = ReconnectAsync();
         return Task.CompletedTask;
+    }
+
+    private async Task ReconnectAsync()
+    {
+        int retryCount = 0;
+        while (!ConnectState && retryCount < 100)
+        {
+            retryCount++;
+            await Task.Delay(3000);
+            try
+            {
+                LogService.Info($"自动重连 LoginSrv 第 {retryCount} 次...");
+                await _clientSocket.ConnectAsync();
+                break;
+            }
+            catch (Exception ex)
+            {
+                LogService.Warn($"重连失败: {ex.Message}");
+            }
+        }
     }
 
     /// <summary>
@@ -139,23 +166,38 @@ public class ClientThread
     /// </summary>
     private Task ClientSocketRead(IClient client, ReceivedDataEventArgs e)
     {
-        int nMsgLen = e.ByteBlock.Len;
-        if (nMsgLen <= 0)
+        // FixedHeader 适配器解析结果在 e.RequestInfo 中，而不是 e.ByteBlock
+        if (e.RequestInfo is not ServerDataMessageFixedHeaderRequestInfo fixedHeader)
         {
             return Task.CompletedTask;
         }
-
-        if (DataLen > 0)
+        if (fixedHeader.Header.PacketCode != Grobal2.PacketCode)
         {
-            MemoryCopy.BlockCopy(e.ByteBlock.Buffer, 0, DataBuff, DataLen, nMsgLen);
-            ProcessServerData(DataBuff, DataLen + nMsgLen);
-        }
-        else
-        {
-            ProcessServerData(e.ByteBlock.Buffer, nMsgLen);
+            LogService.Debug("解析登录服务器封包出现异常封包.");
+            return Task.CompletedTask;
         }
 
-        ReceiveBytes += nMsgLen;
+        try
+        {
+            ServerDataMessage messageData = SerializerUtil.Deserialize<ServerDataMessage>(fixedHeader.Message);
+            LogService.Info($"[LoginGate] LoginSrv回包 Type={messageData.Type} SocketId={messageData.SocketId} DataLen={messageData.DataLen}");
+            switch (messageData.Type)
+            {
+                case ServerDataType.KeepAlive:
+                    KeepAliveTick = HUtil32.GetTickCount();
+                    break;
+                case ServerDataType.Leave:
+                    _sessionManager.CloseSession(messageData.SocketId);
+                    break;
+                case ServerDataType.Data:
+                    _clientManager.SendQueue(messageData);
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            LogService.Warn($"解析LoginSrv消息失败: {ex.Message} Len={fixedHeader.Message?.Length ?? 0}");
+        }
         return Task.CompletedTask;
     }
 

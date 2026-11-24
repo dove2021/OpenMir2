@@ -1297,17 +1297,14 @@ namespace M2Server.Player
                 {
                     MapRandomMove(Envir.MapName, 0);
                 }
-                //if (SystemShare.WorldEngine.GetHumPermission(ChrName, ref sIPaddr, ref Permission))
-                //{
-                //    if (SystemShare.Config.PermissionSystem)
-                //    {
-                //        if (!M2Share.CompareIPaddr(LoginIpAddr, sIPaddr))
-                //        {
-                //            SysMsg(sCheckIPaddrFail, MsgColor.Red, MsgType.Hint);
-                //            BoEmergencyClose = true;
-                //        }
-                //    }
-                //}
+                string sIPaddr = string.Empty;
+                byte btPermission = Permission;
+                bool boGmMatched = SystemShare.WorldEngine.GetHumPermission(ChrName, ref sIPaddr, ref btPermission);
+                if (boGmMatched)
+                {
+                    Permission = btPermission;
+                }
+                LogService.Info($"[GM检查] 角色[{ChrName}] 管理员数={SystemShare.WorldEngine.AdminList.Count} 匹配={boGmMatched} 权限={Permission}");
                 GetStartPoint();
                 for (int i = MagicList.Count - 1; i >= 0; i--)
                 {
@@ -1981,9 +1978,9 @@ namespace M2Server.Player
                                 MapRouteItem mapRoute = M2Share.CellObjectMgr.Get<MapRouteItem>(cellObject.CellObjId);
                                 if (mapRoute.Envir != null)
                                 {
-                                    if (Envir.ArroundDoorOpened(CurrX, CurrY))
-                                    {
-                                        if ((!mapRoute.Envir.Flag.boNEEDHOLE) || (SystemShare.EventMgr.GetEvent(Envir, CurrX, CurrY, Grobal2.ET_DIGOUTZOMBI) != null))
+                                    // 跳过 Door 打开检查 - Door 位置有 MapRoute 就直接触发传送
+                                    // 原版依赖 ArroundDoorOpened 但服务端 Door 状态管理未完善
+                                    if ((!mapRoute.Envir.Flag.boNEEDHOLE) || (SystemShare.EventMgr.GetEvent(Envir, CurrX, CurrY, Grobal2.ET_DIGOUTZOMBI) != null))
                                         {
                                             if (M2Share.ServerIndex == mapRoute.Envir.ServerIndex)
                                             {
@@ -1999,7 +1996,6 @@ namespace M2Server.Player
                                                 ChangeSpaceMove(mapRoute.Envir, mapRoute.X, mapRoute.Y);
                                             }
                                         }
-                                    }
                                 }
                                 break;
                             case CellType.Event:

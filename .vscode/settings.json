@@ -4,5 +4,19 @@
             "approve": true,
             "matchCommandLine": true
         }
+    },
+    "files.autoGuessEncoding": true,
+    "files.candidateGuessEncodings": [
+        "gbk",
+        "utf8"
+    ],
+    "[plaintext]": {
+        "files.encoding": "gbk"
+    },
+    "[ini]": {
+        "files.encoding": "gbk"
+    },
+    "[delphi]": {
+        "files.encoding": "gbk"
     }
 }

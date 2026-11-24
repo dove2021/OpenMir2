@@ -66,6 +66,8 @@ namespace SystemModule.SubSystem
 
         IList<AdminInfo> AdminList { get; set; }
 
+        bool GetHumPermission(string sUserName, ref string sIPaddr, ref byte btPermission);
+
         int PlayObjectCount { get; }
 
         int OnlinePlayObject { get; }

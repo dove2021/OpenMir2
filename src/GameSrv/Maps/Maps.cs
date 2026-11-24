@@ -376,26 +376,36 @@ namespace GameSrv.Maps
                 }
                 
                 // 加载地图连接点
+                int routeCount = 0;
                 for (int i = 0; i < loadList.Count; i++)
                 {
                     sFlag = loadList[i];
                     if (!string.IsNullOrEmpty(sFlag) && sFlag[0] != '[' && sFlag[0] != ';')
                     {
+                        Console.WriteLine($"[MapRoute DEBUG] Line {i}: '{sFlag}'");
                         sFlag = HUtil32.GetValidStr3(sFlag, ref sCommand, HUtil32.Separator);
                         sMapName = sCommand;
+                        Console.WriteLine($"  sMapName='{sMapName}' remaining='{sFlag}'");
                         sFlag = HUtil32.GetValidStr3(sFlag, ref sCommand, HUtil32.Separator);
                         int nX = HUtil32.StrToInt(sCommand, 0);
+                        Console.WriteLine($"  nX={nX} remaining='{sFlag}'");
                         sFlag = HUtil32.GetValidStr3(sFlag, ref sCommand, HUtil32.Separator);
                         int n18 = HUtil32.StrToInt(sCommand, 0);
+                        Console.WriteLine($"  n18={n18} remaining='{sFlag}'");
                         sFlag = HUtil32.GetValidStr3(sFlag, ref sCommand, new[] { ' ', ',', '-', '>', '\t' });
                         string s44 = sCommand;
+                        Console.WriteLine($"  s44='{s44}' remaining='{sFlag}'");
                         sFlag = HUtil32.GetValidStr3(sFlag, ref sCommand, HUtil32.Separator);
                         int n1C = HUtil32.StrToInt(sCommand, 0);
+                        Console.WriteLine($"  n1C={n1C} remaining='{sFlag}'");
                         sFlag = HUtil32.GetValidStr3(sFlag, ref sCommand, new[] { ' ', ',', ';', '\t' });
                         int n20 = HUtil32.StrToInt(sCommand, 0);
+                        Console.WriteLine($"  n20={n20} -> AddMapRoute");
                         SystemShare.MapMgr.AddMapRoute(sMapName, nX, n18, s44, n1C, n20);
+                        routeCount++;
                     }
                 }
+                Console.WriteLine($"[MapRoute] 传送路径解析完成，共 {routeCount} 条");
             }
             LogService.Info($"地图数据加载成功...[{SystemShare.MapMgr.Maps.Count}]");
             return result;
