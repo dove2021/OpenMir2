@@ -1,6 +1,6 @@
 using MakePlayer.Cliens;
 using MakePlayer.Scenes.Scene;
-using NLog;
+using OpenMir2;
 
 namespace MakePlayer.Scenes
 {
