@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.IO;
 using System.Threading;
@@ -9,6 +10,8 @@ namespace OpenMir2.Hosts
     public abstract class ServiceHost
     {
         protected readonly IConfigurationRoot Configuration;
+        protected IHost Host;
+        protected readonly IHostBuilder Builder;
 
         protected ServiceHost()
         {
@@ -20,7 +23,16 @@ namespace OpenMir2.Hosts
             {
                 Configuration = new ConfigurationBuilder().Build();
             }
+            Builder = new HostBuilder();
+            Builder.UseConsoleLifetime();
+            Builder.ConfigureHostOptions(options =>
+            {
+                options.ShutdownTimeout = TimeSpan.FromSeconds(30);
+            });
+            Initialize();
         }
+
+        public IServiceProvider Services => Host?.Services;
 
         public abstract void Initialize();
 

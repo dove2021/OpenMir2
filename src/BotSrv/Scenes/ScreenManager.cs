@@ -1,5 +1,6 @@
 using BotSrv.Player;
 using NLog;
+using OpenMir2;
 
 namespace BotSrv.Scenes
 {
