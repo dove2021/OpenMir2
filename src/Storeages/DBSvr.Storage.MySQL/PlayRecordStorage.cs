@@ -374,7 +374,7 @@ namespace DBSrv.Storage.MySQL
             }
             finally
             {
-                connection.Clone();
+                connection.Close();
                 connection.Dispose();
             }
         }

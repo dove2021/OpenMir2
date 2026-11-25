@@ -53,9 +53,9 @@ namespace DBSrv.Conf
         /// </summary>
         public bool boDenyChrName = true;
         /// <summary>
-        /// 角色删除最小等级，小于该值的角色无法删除
+        /// 角色删除等级门槛，小于该值的角色可以删除，大于等于该值的角色无法删除
         /// </summary>
-        public int DeleteMinLevel = 30;
+        public int DeleteMinLevel = 60;
         public int Interval = 3000;
         /// <summary>
         /// 动态IP模式

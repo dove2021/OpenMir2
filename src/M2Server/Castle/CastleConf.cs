@@ -49,26 +49,26 @@ namespace M2Server.Castle
             userCastle.MainDoor = new ArcherUnit();
             userCastle.MainDoor.nX = ReadWriteInt16("Defense", "MainDoorX", 672);
             userCastle.MainDoor.nY = ReadWriteInt16("Defense", "MainDoorY", 330);
-            userCastle.MainDoor.sName = ReadWriteString("Defense", "MainDoorName", "MainDoor");
+            userCastle.MainDoor.sName = ReadWriteString("Defense", "MainDoorName", "沙巴克城门");
             userCastle.MainDoor.nStatus = ReadWriteBool("Defense", "MainDoorOpen", true);
             userCastle.MainDoor.nHP = ReadWriteUInt16("Defense", "MainDoorHP", 2000);
             userCastle.MainDoor.BaseObject = null;
             userCastle.LeftWall = new ArcherUnit();
             userCastle.LeftWall.nX = ReadWriteInt16("Defense", "LeftWallX", 624);
             userCastle.LeftWall.nY = ReadWriteInt16("Defense", "LeftWallY", 278);
-            userCastle.LeftWall.sName = ReadWriteString("Defense", "LeftWallName", "LeftWall");
+            userCastle.LeftWall.sName = ReadWriteString("Defense", "LeftWallName", "沙巴克左城墙");
             userCastle.LeftWall.nHP = ReadWriteUInt16("Defense", "LeftWallHP", 2000);
             userCastle.LeftWall.BaseObject = null;
             userCastle.CenterWall = new ArcherUnit();
             userCastle.CenterWall.nX = ReadWriteInt16("Defense", "CenterWallX", 627);
             userCastle.CenterWall.nY = ReadWriteInt16("Defense", "CenterWallY", 278);
-            userCastle.CenterWall.sName = ReadWriteString("Defense", "CenterWallName", "CenterWall");
+            userCastle.CenterWall.sName = ReadWriteString("Defense", "CenterWallName", "沙巴克中城墙");
             userCastle.CenterWall.nHP = ReadWriteUInt16("Defense", "CenterWallHP", 2000);
             userCastle.CenterWall.BaseObject = null;
             userCastle.RightWall = new ArcherUnit();
             userCastle.RightWall.nX = ReadWriteInt16("Defense", "RightWallX", 634);
             userCastle.RightWall.nY = ReadWriteInt16("Defense", "RightWallY", 271);
-            userCastle.RightWall.sName = ReadWriteString("Defense", "RightWallName", "RightWall");
+            userCastle.RightWall.sName = ReadWriteString("Defense", "RightWallName", "沙巴克右城墙");
             userCastle.RightWall.nHP = ReadWriteUInt16("Defense", "RightWallHP", 2000);
             userCastle.RightWall.BaseObject = null;
             for (int i = 0; i < userCastle.Archers.Length; i++)
@@ -77,7 +77,7 @@ namespace M2Server.Castle
                 objUnit.nX = ReadWriteInt16("Defense", $"Archer_{i + 1}_X", 0);
                 objUnit.nY = ReadWriteInt16("Defense", $"Archer_{i + 1}_Y", 0);
                 objUnit.sName = ReadWriteString("Defense", $"Archer_{i + 1}_Name", "弓箭手");
-                objUnit.nHP = ReadWriteUInt16("Defense", $"Archer_{i + 1}_HP", 2000);
+                objUnit.nHP = ReadWriteUInt16("Defense", $"Archer_{i + 1}_HP", 0);
                 objUnit.BaseObject = null;
                 userCastle.Archers[i] = objUnit;
             }
@@ -86,8 +86,8 @@ namespace M2Server.Castle
                 ArcherUnit objUnit = new ArcherUnit();
                 objUnit.nX = ReadWriteInt16("Defense", $"Guard_{i + 1}_X", 0);
                 objUnit.nY = ReadWriteInt16("Defense", $"Guard_{i + 1}_Y", 0);
-                objUnit.sName = ReadWriteString("Defense", $"Guard_{i + 1}_Name", "守卫");
-                objUnit.nHP = ReadWriteUInt16("Defense", $"Guard_{i + 1}_HP", 2000);
+                objUnit.sName = ReadWriteString("Defense", $"Guard_{i + 1}_Name", "弓箭守卫");
+                objUnit.nHP = ReadWriteUInt16("Defense", $"Guard_{i + 1}_HP", 0);
                 objUnit.BaseObject = null;
                 userCastle.Guards[i] = objUnit;
             }
@@ -263,56 +263,70 @@ namespace M2Server.Castle
                     WriteInteger("Defense", "RightWallHP", userCastle.RightWall.BaseObject.WAbil.HP);
                 }
             }
-            for (int i = 0; i < userCastle.Archers.Length; i++)
+            if (userCastle.Archers != null)
             {
-                ArcherUnit objUnit = userCastle.Archers[i];
-                if (objUnit.nX != 0)
+                for (int i = 0; i < userCastle.Archers.Length; i++)
                 {
-                    WriteInteger("Defense", $"Archer_{i + 1}_X", objUnit.nX);
-                }
+                    ArcherUnit objUnit = userCastle.Archers[i];
+                    if (objUnit == null)
+                    {
+                        continue;
+                    }
+                    if (objUnit.nX != 0)
+                    {
+                        WriteInteger("Defense", $"Archer_{i + 1}_X", objUnit.nX);
+                    }
 
-                if (objUnit.nY != 0)
-                {
-                    WriteInteger("Defense", $"Archer_{i + 1}_Y", objUnit.nY);
-                }
+                    if (objUnit.nY != 0)
+                    {
+                        WriteInteger("Defense", $"Archer_{i + 1}_Y", objUnit.nY);
+                    }
 
-                if (!string.IsNullOrEmpty(objUnit.sName))
-                {
-                    WriteString("Defense", $"Archer_{i + 1}_Name", objUnit.sName);
-                }
-                if (objUnit.BaseObject != null)
-                {
-                    WriteInteger("Defense", $"Archer_{i + 1}_HP", objUnit.BaseObject.WAbil.HP);
-                }
-                else
-                {
-                    WriteInteger("Defense", $"Archer_{i + 1}_HP", 0);
+                    if (!string.IsNullOrEmpty(objUnit.sName))
+                    {
+                        WriteString("Defense", $"Archer_{i + 1}_Name", objUnit.sName);
+                    }
+                    if (objUnit.BaseObject != null)
+                    {
+                        WriteInteger("Defense", $"Archer_{i + 1}_HP", objUnit.BaseObject.WAbil.HP);
+                    }
+                    else
+                    {
+                        WriteInteger("Defense", $"Archer_{i + 1}_HP", 0);
+                    }
                 }
             }
-            for (int i = 0; i < userCastle.Guards.Length; i++)
+            if (userCastle.Guards != null)
             {
-                ArcherUnit objUnit = userCastle.Guards[i];
-                if (objUnit.nX != 0)
+                for (int i = 0; i < userCastle.Guards.Length; i++)
                 {
-                    WriteInteger("Defense", $"Guard_{i + 1}_X", objUnit.nX);
-                }
+                    ArcherUnit objUnit = userCastle.Guards[i];
+                    if (objUnit == null)
+                    {
+                        continue;
+                    }
+                    if (objUnit.nX != 0)
+                    {
+                        WriteInteger("Defense", $"Guard_{i + 1}_X", objUnit.nX);
+                    }
 
-                if (objUnit.nY != 0)
-                {
-                    WriteInteger("Defense", $"Guard_{i + 1}_Y", objUnit.nY);
-                }
+                    if (objUnit.nY != 0)
+                    {
+                        WriteInteger("Defense", $"Guard_{i + 1}_Y", objUnit.nY);
+                    }
 
-                if (!string.IsNullOrEmpty(objUnit.sName))
-                {
-                    WriteString("Defense", $"Guard_{i + 1}_Name", objUnit.sName);
-                }
-                if (objUnit.BaseObject != null)
-                {
-                    WriteInteger("Defense", $"Guard_{i + 1}_HP", objUnit.BaseObject.WAbil.HP);
-                }
-                else
-                {
-                    WriteInteger("Defense", $"Guard_{i + 1}_HP", 0);
+                    if (!string.IsNullOrEmpty(objUnit.sName))
+                    {
+                        WriteString("Defense", $"Guard_{i + 1}_Name", objUnit.sName);
+                    }
+                    if (objUnit.BaseObject != null)
+                    {
+                        WriteInteger("Defense", $"Guard_{i + 1}_HP", objUnit.BaseObject.WAbil.HP);
+                    }
+                    else
+                    {
+                        WriteInteger("Defense", $"Guard_{i + 1}_HP", 0);
+                    }
                 }
             }
             Save();

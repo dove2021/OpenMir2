@@ -585,6 +585,10 @@ namespace DBSrv.Services.Impl
                             humRecord.Deleted = true;
                             boCheck = _playRecordStorage.Update(nIndex, ref humRecord);
                         }
+                        else
+                        {
+                            boCheck = false;
+                        }
                     }
                 }
             }

@@ -210,6 +210,7 @@ namespace GameSrv
             LogService.Info("管理员列表加载成功...");
             M2Share.NetChannel.Initialize();
             LogService.Info("正在初始化网络服务...");
+            SystemShare.CastleMgr.LoadCastleList();
             SystemShare.CastleMgr.Initialize();
             GameShare.DataServer.Initialize();
             M2Share.Authentication.Initialize();
@@ -243,7 +244,6 @@ namespace GameSrv
                 }
                 SystemShare.WorldEngine.Initialize();
                 SystemShare.GuildMgr.LoadGuildInfo();
-                SystemShare.CastleMgr.LoadCastleList();
                 M2Share.AutoBot.Initialize();
                 M2Share.StartReady = true;
                 LogService.Info("游戏处理引擎初始化成功...");

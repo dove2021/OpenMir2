@@ -3862,6 +3862,7 @@ namespace M2Server.Player
                 }
                 if (!envir.CellValid(nDMapX, nDMapY))
                 {
+                    LogService.Info($"[EnterMap FAIL] 目标格子无效 from {Envir.MapName}({CurrX},{CurrY}) -> {envir.MapName}({nDMapX},{nDMapY})");
                     return false;
                 }
                 IUserCastle castle = SystemShare.CastleMgr.IsCastlePalaceEnvir(envir);

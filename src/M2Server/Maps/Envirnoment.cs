@@ -170,6 +170,7 @@ namespace M2Server.Maps
         {
             if (!CellMatch(nX, nY))
             {
+                LogService.Error($"[AddMapRoute FAIL] CellMatch 越界 map={MapName} ({nX},{nY}) W={Width} H={Height}");
                 return;
             }
             ref MapCellInfo cellInfo = ref GetCellInfo(nX, nY, out bool cellSuccess);
@@ -187,6 +188,11 @@ namespace M2Server.Maps
                 };
                 cellInfo.Add(cellObject);
                 M2Share.CellObjectMgr.Add(cellObject.CellObjId, mapRoute);
+                LogService.Info($"[AddMapRoute OK] map={MapName} ({nX},{nY}) -> {mapRoute.Envir?.MapName}({mapRoute.X},{mapRoute.Y}) RouteId={mapRoute.RouteId}");
+            }
+            else
+            {
+                LogService.Error($"[AddMapRoute FAIL] 格子无效 map={MapName} ({nX},{nY}) cellSuccess={cellSuccess} Valid={cellInfo.Valid}");
             }
         }
 
@@ -1024,6 +1030,31 @@ namespace M2Server.Maps
                             PointList.Add(new PointInfo(nX, nY));
                         }
                     }
+                }
+                if (result && !string.IsNullOrEmpty(MapName) && MapName.IndexOf('~') >= 0)
+                {
+                    int minX = Width, minY = Height, maxX = -1, maxY = -1, validCount = 0;
+                    System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                    for (int x = 0; x < Width; x++)
+                    {
+                        for (int y = 0; y < Height; y++)
+                        {
+                            if (CellArray[x * Height + y].Valid)
+                            {
+                                validCount++;
+                                if (x < minX) minX = x;
+                                if (x > maxX) maxX = x;
+                                if (y < minY) minY = y;
+                                if (y > maxY) maxY = y;
+                                if (sb.Length < 240)
+                                {
+                                    if (sb.Length > 0) sb.Append(',');
+                                    sb.Append('(').Append(x).Append(',').Append(y).Append(')');
+                                }
+                            }
+                        }
+                    }
+                    LogService.Info($"[MapCells] {MapName} size={Width}x{Height} valid={validCount} bbox=[{minX},{minY}]-[{maxX},{maxY}] samples=[{sb}]");
                 }
             }
             catch (Exception)
