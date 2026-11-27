@@ -1,4 +1,4 @@
-using OpenMir2;
+﻿using OpenMir2;
 using OpenMir2.Data;
 using OpenMir2.Extensions;
 using OpenMir2.Packets.ClientPackets;
@@ -169,7 +169,6 @@ namespace M2Server.Net
                         break;
                     case Grobal2.GM_DATA:
                         SessionUser gateUser = null;
-                        
                         if (msgPacket.SessionIndex >= 1)
                         {
                             nUserIdx = msgPacket.SessionIndex - 1;

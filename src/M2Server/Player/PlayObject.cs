@@ -1128,7 +1128,6 @@ namespace M2Server.Player
         /// </summary>
         private void SendLogon()
         {
-            
             MessageBodyWL messageBodyWl = default;
             ClientMsg = Messages.MakeMessage(Messages.SM_LOGON, ActorId, CurrX, CurrY, HUtil32.MakeWord(Dir, Light));
             messageBodyWl.Param1 = GetFeatureToLong();
@@ -1145,7 +1144,7 @@ namespace M2Server.Player
             SendSocket(ClientMsg, EDCode.EncodePacket(messageBodyWl));
             int nRecog = GetFeatureToLong();
             SendDefMessage(Messages.SM_FEATURECHANGED, ActorId, HUtil32.LoWord(nRecog), HUtil32.HiWord(nRecog), GetFeatureEx());
-            SendDefMessage(Messages.SM_ATTACKMODE, (byte)AttatckMode, 0, 0, 0);
+            SendDefMessage(Messages.SM_ATTACKMODE, 0, (byte)AttatckMode, 0, 0);
             SendDefMessage(Messages.SM_RUNHUMAN, 0x01010101, 0, 0, 0);
             SendDefMessage(Messages.SM_INSAFEZONEFLAG, 1, 0, 0, 0);
 
@@ -1286,6 +1285,7 @@ namespace M2Server.Player
                 LogonTick = HUtil32.GetTickCount();
                 Initialize();
                 SendPriorityMsg(Messages.RM_LOGON, 0, 0, 0, 0, "", MessagePriority.High);
+                SendDefMessage(Messages.SM_ATTACKMODE, 0, (byte)AttatckMode, 0, 0);
                 if (Abil.Level <= 7)
                 {
                     if (GetRangeHumanCount() >= 80)
@@ -3343,7 +3343,7 @@ namespace M2Server.Player
                         IActor baseObject = visibleBaseObject.BaseObject;
                         if (baseObject != this)
                         {
-                            LogService.Info($"[ShowActor] Chr={ChrName} sees {baseObject.ChrName} Race={baseObject.Race} CellType={baseObject.CellType} Pos=({baseObject.CurrX},{baseObject.CurrY})");
+
                             if (baseObject.Death)
                             {
                                 if (baseObject.Skeleton)

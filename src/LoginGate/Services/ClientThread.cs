@@ -30,6 +30,10 @@ public class ClientThread
     /// 缓存缓冲长度
     /// </summary>
     private int DataLen;
+    /// <summary>
+    /// 是否正在进行连接尝试，防止看门狗与断开事件重入导致并发连接
+    /// </summary>
+    private bool _connectInProgress;
 
     public ClientThread(ClientManager clientManager, SessionManager sessionManager)
     {
@@ -62,21 +66,28 @@ public class ClientThread
 
     public async Task Start()
     {
+        if (_clientSocket.Online || _connectInProgress)
+        {
+            return;
+        }
+        _connectInProgress = true;
         try
         {
-            if (_clientSocket.Online)
-            {
-                return;
-            }
             await _clientSocket.ConnectAsync();
         }
         catch (TimeoutException)
         {
             LogService.Error($"链接登录服务器[{gameGateInfo.LoginServer}:{gameGateInfo.LoginPort}]超时...");
+            CheckServerFail = true;
         }
         catch (Exception)
         {
             LogService.Error($"链接登录服务器[{gameGateInfo.LoginServer}:{gameGateInfo.LoginPort}]失败...");
+            CheckServerFail = true;
+        }
+        finally
+        {
+            _connectInProgress = false;
         }
     }
 
@@ -133,32 +144,13 @@ public class ClientThread
 
         RestSessionArray();
         ConnectState = false;
+        // 标记连接失败并重置看门狗计时，由 ProcessClientHeart 周期触发重连
+        // （统一覆盖「首次连接失败」与「被动断开」两种场景，避免多套重连逻辑并发）
+        CheckServerFail = true;
+        CheckServerTick = 0;
         //_clientManager.DeleteClientThread(e.SocketHandle);
         LogService.Info($"账号服务器[{((TcpClientBase)client).RemoteIPHost.EndPoint}]断开链接. 开始自动重连...");
-
-        // 自动重连
-        _ = ReconnectAsync();
         return Task.CompletedTask;
-    }
-
-    private async Task ReconnectAsync()
-    {
-        int retryCount = 0;
-        while (!ConnectState && retryCount < 100)
-        {
-            retryCount++;
-            await Task.Delay(3000);
-            try
-            {
-                LogService.Info($"自动重连 LoginSrv 第 {retryCount} 次...");
-                await _clientSocket.ConnectAsync();
-                break;
-            }
-            catch (Exception ex)
-            {
-                LogService.Warn($"重连失败: {ex.Message}");
-            }
-        }
     }
 
     /// <summary>

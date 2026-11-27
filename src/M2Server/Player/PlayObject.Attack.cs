@@ -1038,6 +1038,7 @@ namespace M2Server.Player
                 {
                     result = true;
                 }
+
                 HealthTick -= 60;
                 SpellTick -= 10;
                 SpellTick = HUtil32._MAX(0, SpellTick);
@@ -1349,6 +1350,7 @@ namespace M2Server.Player
                 {
                     result = true;
                 }
+
                 HealthTick -= 60;
                 SpellTick -= 10;
                 SpellTick = HUtil32._MAX(0, SpellTick);
@@ -1421,6 +1423,7 @@ namespace M2Server.Player
                 {
                     result = true;
                 }
+
                 HealthTick -= 10;
             }
             else

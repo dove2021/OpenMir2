@@ -167,25 +167,30 @@ public class ClientManager
             {
                 LogService.Warn("账号服务器长时间没有响应，断开链接。");
                 clientThread.ConnectState = false;
+                clientThread.CheckServerFail = true;
+                clientThread.CheckServerTick = 0;
                 clientThread.Stop();
             }
 
             return;
         }
 
+        // 未连接：看门狗周期触发重连，覆盖「首次连接失败」与「被动断开」两种场景
         if (HUtil32.GetTickCount() - clientThread.CheckServerTick > GateShare.CheckServerTimeOutTime)
         {
             clientThread.CheckServerTick = HUtil32.GetTickCount();
             if (clientThread.CheckServerFail)
             {
+                _ = clientThread.Start();
                 clientThread.CheckServerFailCount++;
-                LogService.Debug($"重新与服务器[{clientThread.EndPoint}]建立链接.失败次数:[{clientThread.CheckServerFailCount}]");
+                LogService.Debug($"重新与账号服务器[{clientThread.EndPoint}]建立链接.失败次数:[{clientThread.CheckServerFailCount}]");
                 return;
             }
 
+            clientThread.CheckServerFail = true;
             clientThread.Stop();
             clientThread.CheckServerFailCount++;
-            LogService.Debug($"服务器[{clientThread.EndPoint}]链接超时.失败次数:[{clientThread.CheckServerFailCount}]");
+            LogService.Debug($"账号服务器[{clientThread.EndPoint}]链接超时.失败次数:[{clientThread.CheckServerFailCount}]");
         }
     }
 

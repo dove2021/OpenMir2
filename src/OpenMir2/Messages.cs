@@ -224,7 +224,7 @@ namespace OpenMir2
         public const int SM_ADDMAGIC = 210;
         public const int SM_SENDMYMAGIC = 211;
         public const int SM_DELMAGIC = 212;
-        public const int SM_ATTACKMODE = 213;
+        public const int SM_ATTACKMODE = 545;
         public const int SM_QUERYVALUE = 215;
 
         public const int CM_CHECKTIME = 15999;

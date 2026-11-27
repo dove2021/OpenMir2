@@ -470,6 +470,7 @@ namespace M2Server.Player
                         Envir.MoveToMovingObject(nOldX, nOldY, this, CurrX, CurrY, true);
                     }
                 }
+
             }
             catch
             {

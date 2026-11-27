@@ -916,8 +916,10 @@ namespace M2Server.Maps
             {
                 if (File.Exists(sMapFile))
                 {
+                    const int mapFormatOffset = 28;   // Reserved[0] 偏移：地图格式版本
+                    const int mapCellDataOffset = 52; // cell 数据起始偏移（= SizeOf(TMapHeader)）
                     using FileStream fileStream = new FileStream(sMapFile, FileMode.Open, FileAccess.Read);
-                    if (fileStream.Length <= 52)
+                    if (fileStream.Length <= mapCellDataOffset)
                     {
                         fileStream.Close();
                         fileStream.Dispose();
@@ -926,8 +928,23 @@ namespace M2Server.Maps
                     using BinaryReader binReader = new BinaryReader(fileStream);
                     Width = binReader.ReadInt16();
                     Height = binReader.ReadInt16();
+                    fileStream.Position = mapFormatOffset; // Reserved[0] 起始偏移，读取地图格式版本
+                    byte mapFormat = binReader.ReadByte();
+                    // 客户端按 Reserved[0] 选择每格字节数: 2=TMapInfo_2(14B), 6=TMapInfo(36B), 其他=TMapInfo_Old(12B)
+                    // 服务端只解析核心前 12 字节，需按格式跳过每格剩余字段，否则逐格错位导致阻挡数据错乱
+                    int extraCellBytes = mapFormat switch
+                    {
+                        2 => 2,
+                        6 => 24,
+                        _ => -1 // 未知格式：下方统一告警并按默认 12B/格(不跳过)容错
+                    };
+                    if (extraCellBytes < 0)
+                    {
+                        LogService.Warn($"地图[{MapName}]格式版本[{mapFormat}]未识别，按默认12字节/格解析，阻挡数据可能错位");
+                        extraCellBytes = 0;
+                    }
                     Initialize(Width, Height);
-                    fileStream.Position = 52;
+                    fileStream.Position = mapCellDataOffset;
                     bool isInitialize = true;
 
                     MapUnitInfo mapUnitInfo = new MapUnitInfo();
@@ -945,6 +962,10 @@ namespace M2Server.Maps
                             mapUnitInfo.btAniTick = binReader.ReadByte();
                             mapUnitInfo.btArea = binReader.ReadByte();
                             mapUnitInfo.btLight = binReader.ReadByte();
+                            if (extraCellBytes > 0)
+                            {
+                                fileStream.Position += extraCellBytes;
+                            }
                             CellArray[n24 + nH] = new MapCellInfo();
                             if ((mapUnitInfo.wBkImg & 0x8000) != 0)// wBkImg High
                             {
@@ -1031,31 +1052,7 @@ namespace M2Server.Maps
                         }
                     }
                 }
-                if (result && !string.IsNullOrEmpty(MapName) && MapName.IndexOf('~') >= 0)
-                {
-                    int minX = Width, minY = Height, maxX = -1, maxY = -1, validCount = 0;
-                    System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                    for (int x = 0; x < Width; x++)
-                    {
-                        for (int y = 0; y < Height; y++)
-                        {
-                            if (CellArray[x * Height + y].Valid)
-                            {
-                                validCount++;
-                                if (x < minX) minX = x;
-                                if (x > maxX) maxX = x;
-                                if (y < minY) minY = y;
-                                if (y > maxY) maxY = y;
-                                if (sb.Length < 240)
-                                {
-                                    if (sb.Length > 0) sb.Append(',');
-                                    sb.Append('(').Append(x).Append(',').Append(y).Append(')');
-                                }
-                            }
-                        }
-                    }
-                    LogService.Info($"[MapCells] {MapName} size={Width}x{Height} valid={validCount} bbox=[{minX},{minY}]-[{maxX},{maxY}] samples=[{sb}]");
-                }
+
             }
             catch (Exception)
             {

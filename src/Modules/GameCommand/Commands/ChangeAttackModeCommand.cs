@@ -17,26 +17,11 @@ namespace CommandModule.Commands
         {
             if (PlayerActor.AttatckMode >= AttackMode.HAM_PKATTACK)
             {
-                PlayerActor.AttatckMode = 0;
+                PlayerActor.AttatckMode = AttackMode.HAM_ALL;
             }
             else
-            {
-                if (PlayerActor.AttatckMode < AttackMode.HAM_PKATTACK)
-                {
-                    PlayerActor.AttatckMode++;
-                }
-                else
-                {
-                    PlayerActor.AttatckMode = AttackMode.HAM_ALL;
-                }
-            }
-            if (PlayerActor.AttatckMode < AttackMode.HAM_PKATTACK)
             {
                 PlayerActor.AttatckMode++;
-            }
-            else
-            {
-                PlayerActor.AttatckMode = AttackMode.HAM_ALL;
             }
             switch (PlayerActor.AttatckMode)
             {
@@ -62,7 +47,8 @@ namespace CommandModule.Commands
                     PlayerActor.SysMsg(MessageSettings.AttackModeOfRedWhite, MsgColor.Green, MsgType.Hint);
                     break;
             }
-            PlayerActor.SendDefMessage(Messages.SM_ATTACKMODE, (byte)PlayerActor.AttatckMode, 0, 0, 0);
+            byte nParam = (byte)PlayerActor.AttatckMode;
+            PlayerActor.SendDefMessage(Messages.SM_ATTACKMODE, 0, nParam, 0, 0);
         }
     }
 }
